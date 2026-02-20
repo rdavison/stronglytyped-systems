@@ -689,9 +689,9 @@ main {
 
 .project-card__screenshot {
     width: 100%;
-    height: 220px;
+    height: 380px;
     object-fit: cover;
-    object-position: top;
+    object-position: center;
     display: block;
     filter: brightness(0.8);
     transition: filter var(--transition-base);

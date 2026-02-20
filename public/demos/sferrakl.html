@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sferrakl — Layout Comparison</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a10; color: #D3C6AA; font-family: 'Inter', sans-serif; padding: 24px; overflow-y: auto; }
+
+  h1 { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #7A8478; margin-bottom: 24px; }
+
+  .chart-section { margin-bottom: 32px; }
+  .chart-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #C4A882; margin-bottom: 12px; cursor: pointer; transition: color 0.15s; }
+  .chart-title:hover { color: #D3C6AA; }
+
+  .chart-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .chart-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #7A8478; width: 70px; text-align: right; flex-shrink: 0; }
+  .chart-bar-bg { flex: 1; height: 18px; background: rgba(167,192,128,0.04); border-radius: 3px; overflow: hidden; position: relative; }
+  .chart-bar { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1); width: 0; }
+  .chart-value { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #D3C6AA; opacity: 0.8; }
+
+  .heatmap-section { margin-top: 32px; }
+  .heatmap-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #C4A882; margin-bottom: 16px; }
+  .heatmap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .heatmap-card { background: rgba(18,18,26,0.6); border: 1px solid rgba(167,192,128,0.07); border-radius: 6px; padding: 12px; }
+  .heatmap-card-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #7A8478; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .fingers { display: flex; gap: 3px; justify-content: center; }
+  .finger-cell { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: rgba(211,198,170,0.7); transition: background 0.8s; }
+  .finger-labels { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
+  .finger-labels span { width: 28px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 7px; color: #7A8478; }
+  .divider { width: 6px; }
+
+  .legend { display: flex; align-items: center; gap: 16px; margin-top: 20px; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #7A8478; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<h1>Keyboard Layout Analysis</h1>
+
+<div id="charts"></div>
+
+<div class="heatmap-section">
+  <div class="heatmap-title">Finger Workload Distribution</div>
+  <div class="heatmap-grid" id="heatmaps"></div>
+  <div class="finger-labels" style="max-width: 400px; margin: 8px auto 0;">
+    <span>P</span><span>R</span><span>M</span><span>I</span><div class="divider"></div><span>I</span><span>M</span><span>R</span><span>P</span>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(167,192,128,0.15)"></div>Low</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(167,192,128,0.4)"></div>Medium</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(167,192,128,0.75)"></div>High</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(230,126,128,0.6)"></div>Overloaded</div>
+  </div>
+</div>
+
+<script>
+const LAYOUTS = ['QWERTY', 'Colemak', 'Dvorak', 'Graphite'];
+const COLORS = {
+  QWERTY:   '#7FBBB3',
+  Colemak:  '#A7C080',
+  Dvorak:   '#DBBC7F',
+  Graphite: '#9B4D6A',
+};
+
+const METRICS = [
+  { name: 'SFB Rate', unit: '%', lower_better: true,
+    data: { QWERTY: 6.5, Colemak: 1.7, Dvorak: 2.6, Graphite: 1.1 }, max: 8 },
+  { name: 'Travel Distance', unit: 'u', lower_better: true,
+    data: { QWERTY: 3.2, Colemak: 1.8, Dvorak: 2.1, Graphite: 1.6 }, max: 4 },
+  { name: 'Hand Alternation', unit: '%', lower_better: false,
+    data: { QWERTY: 44, Colemak: 46, Dvorak: 67, Graphite: 48 }, max: 80 },
+  { name: 'Same-Hand Runs', unit: '/k', lower_better: true,
+    data: { QWERTY: 142, Colemak: 118, Dvorak: 62, Graphite: 108 }, max: 160 },
+  { name: 'Overall Score', unit: '', lower_better: false,
+    data: { QWERTY: 38, Colemak: 72, Dvorak: 65, Graphite: 78 }, max: 100 },
+];
+
+const FINGER_WORKLOAD = {
+  QWERTY:   [8, 7, 12, 18, 20, 14, 8, 13],
+  Colemak:  [8, 9, 11, 16, 17, 13, 10, 16],
+  Dvorak:   [10, 8, 14, 14, 16, 15, 10, 13],
+  Graphite: [9, 10, 12, 15, 15, 14, 11, 14],
+};
+
+function barColor(layout, metric) {
+  const val = metric.data[layout];
+  const ratio = val / metric.max;
+  if (metric.lower_better) {
+    if (ratio < 0.3) return '#A7C080';
+    if (ratio < 0.6) return '#DBBC7F';
+    return '#E67E80';
+  } else {
+    if (ratio > 0.7) return '#A7C080';
+    if (ratio > 0.4) return '#DBBC7F';
+    return '#E67E80';
+  }
+}
+
+function renderCharts() {
+  const container = document.getElementById('charts');
+  container.innerHTML = '';
+
+  for (const metric of METRICS) {
+    const section = document.createElement('div');
+    section.className = 'chart-section';
+
+    const title = document.createElement('div');
+    title.className = 'chart-title';
+    title.textContent = metric.name + (metric.unit ? ` (${metric.unit})` : '');
+    section.appendChild(title);
+
+    const sorted = [...LAYOUTS].sort((a, b) => {
+      const va = metric.data[a], vb = metric.data[b];
+      return metric.lower_better ? va - vb : vb - va;
+    });
+
+    for (const layout of sorted) {
+      const row = document.createElement('div');
+      row.className = 'chart-row';
+
+      const label = document.createElement('div');
+      label.className = 'chart-label';
+      label.textContent = layout;
+      row.appendChild(label);
+
+      const bg = document.createElement('div');
+      bg.className = 'chart-bar-bg';
+
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.background = barColor(layout, metric);
+      const pct = (metric.data[layout] / metric.max) * 100;
+      bar.dataset.width = pct + '%';
+
+      const val = document.createElement('div');
+      val.className = 'chart-value';
+      val.textContent = metric.data[layout] + (metric.unit ? ' ' + metric.unit : '');
+
+      bg.appendChild(bar);
+      bg.appendChild(val);
+      row.appendChild(bg);
+      section.appendChild(row);
+    }
+
+    container.appendChild(section);
+  }
+
+  // animate bars in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.chart-bar').forEach(bar => {
+        bar.style.width = bar.dataset.width;
+      });
+    });
+  });
+}
+
+function renderHeatmaps() {
+  const container = document.getElementById('heatmaps');
+  container.innerHTML = '';
+
+  for (const layout of LAYOUTS) {
+    const card = document.createElement('div');
+    card.className = 'heatmap-card';
+
+    const title = document.createElement('div');
+    title.className = 'heatmap-card-title';
+    title.textContent = layout;
+    card.appendChild(title);
+
+    const fingers = document.createElement('div');
+    fingers.className = 'fingers';
+
+    const workload = FINGER_WORKLOAD[layout];
+    for (let i = 0; i < 8; i++) {
+      if (i === 4) {
+        const div = document.createElement('div');
+        div.className = 'divider';
+        fingers.appendChild(div);
+      }
+      const cell = document.createElement('div');
+      cell.className = 'finger-cell';
+      const w = workload[i];
+      let bg;
+      if (w > 18) bg = 'rgba(230,126,128,0.6)';
+      else if (w > 15) bg = 'rgba(167,192,128,0.75)';
+      else if (w > 10) bg = 'rgba(167,192,128,0.4)';
+      else bg = 'rgba(167,192,128,0.15)';
+      cell.style.background = bg;
+      cell.textContent = w + '%';
+      fingers.appendChild(cell);
+    }
+
+    card.appendChild(fingers);
+    container.appendChild(card);
+  }
+}
+
+renderCharts();
+renderHeatmaps();
+</script>
+</body>
+</html>

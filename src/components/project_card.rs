@@ -7,12 +7,48 @@ use crate::pages::projects::Project;
 pub fn ProjectCard(project: Project) -> impl IntoView {
     let has_demos = !project.demos.is_empty();
     let demos: Vec<(&'static str, &'static str)> = project.demos.to_vec();
+    let screenshot = project.screenshot;
 
-    // For demo tabs: track which tab is active (default to first)
+    let (demo_open, set_demo_open) = signal(false);
     let (active_demo, set_active_demo) = signal(0_usize);
 
     view! {
-        <div class="project-card">
+        <div class=move || {
+            if demo_open.get() {
+                "project-card project-card--demo-open"
+            } else {
+                "project-card"
+            }
+        }>
+            {screenshot.map(|src| {
+                let has_demos_for_badge = has_demos;
+                let set_open = set_demo_open;
+                view! {
+                    <div
+                        class="project-card__preview"
+                        style=move || if demo_open.get() { "display: none;" } else { "" }
+                    >
+                        <img
+                            src=src
+                            alt="Project screenshot"
+                            class="project-card__screenshot"
+                        />
+                        {if has_demos_for_badge {
+                            Some(view! {
+                                <button
+                                    class="project-card__demo-badge"
+                                    on:click=move |_| set_open.set(true)
+                                >
+                                    "Try Demo"
+                                </button>
+                            })
+                        } else {
+                            None
+                        }}
+                    </div>
+                }
+            })}
+
             <h3 class="project-card__name">{project.name}</h3>
             <p class="project-card__description">{project.description}</p>
             <div class="project-card__tags">
@@ -48,31 +84,50 @@ pub fn ProjectCard(project: Project) -> impl IntoView {
             {if has_demos {
                 let demo_tabs = demos.clone();
                 let demo_frames = demos.clone();
+                let multi_tab = demo_tabs.len() > 1;
                 Some(view! {
-                    <div class="project-card__demo">
-                        <span class="project-card__demo-label">"Live Demo"</span>
-                        <div class="project-card__demo-tabs">
-                            {demo_tabs
-                                .into_iter()
-                                .enumerate()
-                                .map(|(idx, (label, _url))| {
-                                    let set_active = set_active_demo.clone();
-                                    view! {
-                                        <button
-                                            class=move || {
-                                                if active_demo.get() == idx {
-                                                    "project-card__demo-tab project-card__demo-tab--active"
-                                                } else {
-                                                    "project-card__demo-tab"
+                    <div
+                        class="project-card__demo"
+                        style=move || if demo_open.get() { "" } else { "display: none;" }
+                    >
+                        <div class="project-card__demo-header">
+                            <span class="project-card__demo-label-inline">"Live Demo"</span>
+                            {if multi_tab {
+                                let tabs = demo_tabs.clone();
+                                Some(view! {
+                                    <div class="project-card__demo-tabs">
+                                        {tabs
+                                            .into_iter()
+                                            .enumerate()
+                                            .map(|(idx, (label, _url))| {
+                                                let set_active = set_active_demo;
+                                                view! {
+                                                    <button
+                                                        class=move || {
+                                                            if active_demo.get() == idx {
+                                                                "project-card__demo-tab project-card__demo-tab--active"
+                                                            } else {
+                                                                "project-card__demo-tab"
+                                                            }
+                                                        }
+                                                        on:click=move |_| set_active.set(idx)
+                                                    >
+                                                        {label}
+                                                    </button>
                                                 }
-                                            }
-                                            on:click=move |_| set_active.set(idx)
-                                        >
-                                            {label}
-                                        </button>
-                                    }
+                                            })
+                                            .collect::<Vec<_>>()}
+                                    </div>
                                 })
-                                .collect::<Vec<_>>()}
+                            } else {
+                                None
+                            }}
+                            <button
+                                class="project-card__demo-close"
+                                on:click=move |_| set_demo_open.set(false)
+                            >
+                                "\u{2715} Close"
+                            </button>
                         </div>
                         {demo_frames
                             .into_iter()

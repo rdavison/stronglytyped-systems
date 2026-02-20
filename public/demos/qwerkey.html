@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>qwerkey — Keyboard Typing Visualizer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a10; color: #D3C6AA; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+  .container { display: flex; height: 100vh; }
+  .keyboard-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  .sidebar { width: 200px; padding: 20px; border-left: 1px solid rgba(167,192,128,0.1); display: flex; flex-direction: column; gap: 16px; }
+
+  .typing-line { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #7A8478; margin-bottom: 16px; height: 20px; text-align: center; width: 100%; }
+  .typing-line .typed { color: #A7C080; }
+  .typing-line .cursor { color: #D3C6AA; border-bottom: 2px solid #D3C6AA; }
+
+  svg.keyboard { width: 560px; height: 200px; }
+  .key { fill: #12121a; stroke: rgba(167,192,128,0.12); stroke-width: 1; rx: 4; transition: fill 0.08s; }
+  .key.active { fill: #2a3520; stroke: #A7C080; stroke-width: 1.5; }
+  .key-label { fill: #7A8478; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .key.active + .key-label, .key.active ~ .key-label { fill: #D3C6AA; }
+
+  .finger { fill: rgba(155, 77, 106, 0.8); transition: cx 0.06s ease-out, cy 0.06s ease-out; }
+
+  .sidebar h3 { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #7A8478; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #7A8478; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #A7C080; }
+  .stat-value.warn { color: #DBBC7F; }
+  .stat-value.bad { color: #E67E80; }
+
+  .layout-switch { display: flex; gap: 4px; flex-wrap: wrap; }
+  .layout-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 3px 8px; background: transparent; border: 1px solid rgba(167,192,128,0.15); color: #7A8478; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
+  .layout-btn.active { color: #C4A882; border-color: rgba(196,168,130,0.4); background: rgba(196,168,130,0.08); }
+  .layout-btn:hover { border-color: rgba(167,192,128,0.3); }
+
+  .speed-bar { width: 100%; height: 4px; background: rgba(167,192,128,0.08); border-radius: 2px; overflow: hidden; }
+  .speed-fill { height: 100%; background: #A7C080; border-radius: 2px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="keyboard-area">
+    <div class="typing-line" id="typingLine"></div>
+    <svg class="keyboard" id="keyboard" viewBox="0 0 560 200"></svg>
+  </div>
+  <div class="sidebar">
+    <h3>Layout</h3>
+    <div class="layout-switch" id="layoutSwitch"></div>
+
+    <h3>Stats</h3>
+    <div class="stat">
+      <span class="stat-label">Travel</span>
+      <span class="stat-value" id="travel">0.0 px</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Same-Finger Bigrams</span>
+      <span class="stat-value" id="sfb">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Keys Typed</span>
+      <span class="stat-value" id="keysTyped">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Alternation</span>
+      <span class="stat-value" id="alternation">—</span>
+    </div>
+
+    <h3>Speed</h3>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<script>
+const LAYOUTS = {
+  QWERTY:  ['qwertyuiop','asdfghjkl;',"zxcvbnm,."],
+  Colemak: ['qwfpgjluy;','arstdhneio',"zxcvbkm,."],
+  Dvorak:  ["',.pyfgcrl",'.aoeuidhtns',";qjkxbmwvz"],
+};
+
+// finger assignment: 0-3 left pinky→index, 4-7 right index→pinky
+const FINGER_MAP_ROW = [
+  [0,1,2,3,3,4,4,5,6,7],
+  [0,1,2,3,3,4,4,5,6,7],
+  [0,1,2,3,3,4,4,5,6,7],
+];
+
+const ROW_Y = [20, 72, 124];
+const ROW_OFFSETS = [0, 18, 36];
+const KEY_W = 44, KEY_H = 40, KEY_GAP = 8;
+const FINGER_HOME = {
+  0:{r:1,c:0}, 1:{r:1,c:1}, 2:{r:1,c:2}, 3:{r:1,c:3},
+  4:{r:1,c:6}, 5:{r:1,c:7}, 6:{r:1,c:8}, 7:{r:1,c:9}
+};
+
+const TEXT = "the quick brown fox jumps over the lazy dog and types with vigor across every key on the board";
+
+let currentLayout = 'QWERTY';
+let charIndex = 0;
+let travel = 0;
+let sfbCount = 0;
+let keyCount = 0;
+let altCount = 0;
+let lastFinger = -1;
+let lastHand = -1;
+let lastFingerPos = {};
+let activeKeys = new Set();
+
+const svg = document.getElementById('keyboard');
+const typingLine = document.getElementById('typingLine');
+
+function keyX(row, col) { return ROW_OFFSETS[row] + col * (KEY_W + KEY_GAP); }
+function keyY(row) { return ROW_Y[row]; }
+function keyCX(row, col) { return keyX(row, col) + KEY_W / 2; }
+function keyCY(row) { return keyY(row) + KEY_H / 2; }
+
+function renderKeyboard() {
+  svg.innerHTML = '';
+  const layout = LAYOUTS[currentLayout];
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < layout[r].length; c++) {
+      const x = keyX(r, c), y = keyY(r);
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x); rect.setAttribute('y', y);
+      rect.setAttribute('width', KEY_W); rect.setAttribute('height', KEY_H);
+      rect.setAttribute('rx', 4);
+      rect.classList.add('key');
+      rect.id = `key-${r}-${c}`;
+      svg.appendChild(rect);
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x + KEY_W/2); text.setAttribute('y', y + KEY_H/2);
+      text.classList.add('key-label');
+      text.textContent = layout[r][c].toUpperCase();
+      svg.appendChild(text);
+    }
+  }
+
+  // finger dots
+  for (let f = 0; f < 8; f++) {
+    const home = FINGER_HOME[f];
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', keyCX(home.r, home.c));
+    circle.setAttribute('cy', keyCY(home.r) + KEY_H/2 + 8);
+    circle.setAttribute('r', 5);
+    circle.classList.add('finger');
+    circle.id = `finger-${f}`;
+    svg.appendChild(circle);
+    lastFingerPos[f] = { x: keyCX(home.r, home.c), y: keyCY(home.r) };
+  }
+}
+
+function findKey(ch) {
+  const layout = LAYOUTS[currentLayout];
+  const lower = ch.toLowerCase();
+  for (let r = 0; r < 3; r++) {
+    const idx = layout[r].indexOf(lower);
+    if (idx >= 0) return { r, c: idx };
+  }
+  return null;
+}
+
+function typeNextChar() {
+  if (charIndex >= TEXT.length) {
+    charIndex = 0;
+    travel = 0; sfbCount = 0; keyCount = 0; altCount = 0;
+    lastFinger = -1; lastHand = -1;
+  }
+
+  const ch = TEXT[charIndex];
+  charIndex++;
+
+  // update typing line
+  const before = TEXT.substring(Math.max(0, charIndex - 40), charIndex);
+  const after = TEXT.substring(charIndex, charIndex + 30);
+  typingLine.innerHTML = `<span class="typed">${before}</span><span class="cursor">${after.charAt(0) || ''}</span>${after.substring(1)}`;
+
+  if (ch === ' ') {
+    setTimeout(typeNextChar, 120);
+    return;
+  }
+
+  const pos = findKey(ch);
+  if (!pos) { setTimeout(typeNextChar, 80); return; }
+
+  const finger = FINGER_MAP_ROW[pos.r][pos.c];
+  const hand = finger < 4 ? 0 : 1;
+
+  // travel
+  const newX = keyCX(pos.r, pos.c);
+  const newY = keyCY(pos.r);
+  if (lastFingerPos[finger]) {
+    const dx = newX - lastFingerPos[finger].x;
+    const dy = newY - lastFingerPos[finger].y;
+    travel += Math.sqrt(dx*dx + dy*dy);
+  }
+  lastFingerPos[finger] = { x: newX, y: newY };
+
+  // SFB
+  if (lastFinger === finger && lastFinger >= 0) sfbCount++;
+
+  // alternation
+  keyCount++;
+  if (lastHand >= 0 && hand !== lastHand) altCount++;
+
+  lastFinger = finger;
+  lastHand = hand;
+
+  // animate finger
+  const dot = document.getElementById(`finger-${finger}`);
+  if (dot) {
+    dot.setAttribute('cx', newX);
+    dot.setAttribute('cy', keyCY(pos.r) + KEY_H/2 + 8);
+  }
+
+  // highlight key
+  activeKeys.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  activeKeys.clear();
+  const keyId = `key-${pos.r}-${pos.c}`;
+  const keyEl = document.getElementById(keyId);
+  if (keyEl) { keyEl.classList.add('active'); activeKeys.add(keyId); }
+
+  // update stats
+  document.getElementById('travel').textContent = travel.toFixed(1) + ' px';
+  const sfbEl = document.getElementById('sfb');
+  sfbEl.textContent = sfbCount;
+  sfbEl.className = 'stat-value' + (sfbCount > 5 ? ' bad' : sfbCount > 2 ? ' warn' : '');
+  document.getElementById('keysTyped').textContent = keyCount;
+  const altPct = keyCount > 1 ? ((altCount / (keyCount - 1)) * 100).toFixed(0) : '—';
+  document.getElementById('alternation').textContent = altPct === '—' ? '—' : altPct + '%';
+  document.getElementById('speedFill').style.width = Math.min(100, (keyCount / TEXT.length) * 100) + '%';
+
+  // return finger home after delay
+  setTimeout(() => {
+    const home = FINGER_HOME[finger];
+    if (dot) {
+      dot.setAttribute('cx', keyCX(home.r, home.c));
+      dot.setAttribute('cy', keyCY(home.r) + KEY_H/2 + 8);
+    }
+    if (keyEl) keyEl.classList.remove('active');
+    activeKeys.delete(keyId);
+  }, 200);
+
+  setTimeout(typeNextChar, 90 + Math.random() * 40);
+}
+
+function renderLayoutButtons() {
+  const container = document.getElementById('layoutSwitch');
+  container.innerHTML = '';
+  for (const name of Object.keys(LAYOUTS)) {
+    const btn = document.createElement('button');
+    btn.className = 'layout-btn' + (name === currentLayout ? ' active' : '');
+    btn.textContent = name;
+    btn.onclick = () => {
+      currentLayout = name;
+      charIndex = 0; travel = 0; sfbCount = 0; keyCount = 0; altCount = 0;
+      lastFinger = -1; lastHand = -1; lastFingerPos = {};
+      renderKeyboard();
+      renderLayoutButtons();
+    };
+    container.appendChild(btn);
+  }
+}
+
+renderKeyboard();
+renderLayoutButtons();
+setTimeout(typeNextChar, 800);
+</script>
+</body>
+</html>

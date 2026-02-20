@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cubesim — Rubik's Cube Simulator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a10; color: #D3C6AA; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 16px; overflow: hidden; }
+
+  canvas { cursor: pointer; }
+
+  .controls { display: flex; gap: 8px; align-items: center; }
+  .btn { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 6px 14px; background: transparent; border: 1px solid rgba(167,192,128,0.15); color: #7A8478; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.15s; }
+  .btn:hover { color: #D3C6AA; border-color: rgba(167,192,128,0.35); }
+  .btn.accent { border-color: rgba(155,77,106,0.4); color: #9B4D6A; }
+  .btn.accent:hover { border-color: rgba(155,77,106,0.7); color: #D3C6AA; background: rgba(155,77,106,0.1); }
+
+  .stats { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #7A8478; display: flex; gap: 16px; }
+  .stats span { color: #A7C080; }
+
+  .face-btns { display: flex; gap: 4px; }
+  .face-btn { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 4px 8px; background: transparent; border: 1px solid rgba(167,192,128,0.1); color: #7A8478; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
+  .face-btn:hover { border-color: rgba(167,192,128,0.3); color: #D3C6AA; }
+</style>
+</head>
+<body>
+<canvas id="cube" width="360" height="320"></canvas>
+<div class="face-btns">
+  <button class="face-btn" onclick="doMove('U')">U</button>
+  <button class="face-btn" onclick="doMove('D')">D</button>
+  <button class="face-btn" onclick="doMove('L')">L</button>
+  <button class="face-btn" onclick="doMove('R')">R</button>
+  <button class="face-btn" onclick="doMove('F')">F</button>
+  <button class="face-btn" onclick="doMove('B')">B</button>
+  <button class="face-btn" onclick="doMove('U',true)">U'</button>
+  <button class="face-btn" onclick="doMove('R',true)">R'</button>
+  <button class="face-btn" onclick="doMove('F',true)">F'</button>
+</div>
+<div class="controls">
+  <button class="btn accent" onclick="scramble()">Scramble</button>
+  <button class="btn" onclick="resetCube()">Reset</button>
+</div>
+<div class="stats">Moves: <span id="moves">0</span> &nbsp; State: <span id="state">Solved</span></div>
+
+<script>
+const canvas = document.getElementById('cube');
+const ctx = canvas.getContext('2d');
+
+// Colors: U=white, D=yellow, F=green, B=blue, L=orange, R=red
+const COLORS = ['#E8E8E8', '#DBBC7F', '#A7C080', '#7FBBB3', '#D699B6', '#E67E80'];
+const FACE_NAMES = ['U','D','F','B','L','R'];
+
+// Each face is a 3x3 grid of color indices
+let faces = {};
+let moveCount = 0;
+let animating = false;
+let moveQueue = [];
+
+function initFaces() {
+  faces = {};
+  for (let i = 0; i < 6; i++) {
+    faces[FACE_NAMES[i]] = Array(9).fill(i);
+  }
+}
+
+function rotateFaceCW(name) {
+  const f = faces[name];
+  const n = [f[6],f[3],f[0],f[7],f[4],f[1],f[8],f[5],f[2]];
+  faces[name] = n;
+}
+function rotateFaceCCW(name) {
+  rotateFaceCW(name); rotateFaceCW(name); rotateFaceCW(name);
+}
+
+function applyMove(m, ccw) {
+  if (ccw) { applyMove(m, false); applyMove(m, false); applyMove(m, false); return; }
+  switch(m) {
+    case 'U':
+      rotateFaceCW('U');
+      const ut = [faces.F[0],faces.F[1],faces.F[2]];
+      faces.F[0]=faces.R[0]; faces.F[1]=faces.R[1]; faces.F[2]=faces.R[2];
+      faces.R[0]=faces.B[0]; faces.R[1]=faces.B[1]; faces.R[2]=faces.B[2];
+      faces.B[0]=faces.L[0]; faces.B[1]=faces.L[1]; faces.B[2]=faces.L[2];
+      faces.L[0]=ut[0]; faces.L[1]=ut[1]; faces.L[2]=ut[2];
+      break;
+    case 'D':
+      rotateFaceCW('D');
+      const dt = [faces.F[6],faces.F[7],faces.F[8]];
+      faces.F[6]=faces.L[6]; faces.F[7]=faces.L[7]; faces.F[8]=faces.L[8];
+      faces.L[6]=faces.B[6]; faces.L[7]=faces.B[7]; faces.L[8]=faces.B[8];
+      faces.B[6]=faces.R[6]; faces.B[7]=faces.R[7]; faces.B[8]=faces.R[8];
+      faces.R[6]=dt[0]; faces.R[7]=dt[1]; faces.R[8]=dt[2];
+      break;
+    case 'F':
+      rotateFaceCW('F');
+      const ft = [faces.U[6],faces.U[7],faces.U[8]];
+      faces.U[6]=faces.L[8]; faces.U[7]=faces.L[5]; faces.U[8]=faces.L[2];
+      faces.L[2]=faces.D[0]; faces.L[5]=faces.D[1]; faces.L[8]=faces.D[2];
+      faces.D[0]=faces.R[6]; faces.D[1]=faces.R[3]; faces.D[2]=faces.R[0];
+      faces.R[0]=ft[0]; faces.R[3]=ft[1]; faces.R[6]=ft[2];
+      break;
+    case 'B':
+      rotateFaceCW('B');
+      const bt = [faces.U[0],faces.U[1],faces.U[2]];
+      faces.U[0]=faces.R[2]; faces.U[1]=faces.R[5]; faces.U[2]=faces.R[8];
+      faces.R[2]=faces.D[8]; faces.R[5]=faces.D[7]; faces.R[8]=faces.D[6];
+      faces.D[6]=faces.L[0]; faces.D[7]=faces.L[3]; faces.D[8]=faces.L[6];
+      faces.L[0]=bt[2]; faces.L[3]=bt[1]; faces.L[6]=bt[0];
+      break;
+    case 'L':
+      rotateFaceCW('L');
+      const lt = [faces.U[0],faces.U[3],faces.U[6]];
+      faces.U[0]=faces.B[8]; faces.U[3]=faces.B[5]; faces.U[6]=faces.B[2];
+      faces.B[2]=faces.D[6]; faces.B[5]=faces.D[3]; faces.B[8]=faces.D[0];
+      faces.D[0]=faces.F[0]; faces.D[3]=faces.F[3]; faces.D[6]=faces.F[6];
+      faces.F[0]=lt[0]; faces.F[3]=lt[1]; faces.F[6]=lt[2];
+      break;
+    case 'R':
+      rotateFaceCW('R');
+      const rt = [faces.U[2],faces.U[5],faces.U[8]];
+      faces.U[2]=faces.F[2]; faces.U[5]=faces.F[5]; faces.U[8]=faces.F[8];
+      faces.F[2]=faces.D[2]; faces.F[5]=faces.D[5]; faces.F[8]=faces.D[8];
+      faces.D[2]=faces.B[6]; faces.D[5]=faces.B[3]; faces.D[8]=faces.B[0];
+      faces.B[0]=rt[2]; faces.B[3]=rt[1]; faces.B[6]=rt[0];
+      break;
+  }
+}
+
+// Isometric projection
+const CX = 180, CY = 140;
+const S = 32; // cell size
+const AX = Math.cos(Math.PI/6) * S, AY = Math.sin(Math.PI/6) * S;
+
+function project(face, row, col) {
+  // Returns quad corners for a cell
+  const points = [];
+  if (face === 'top') {
+    const ox = CX + (col - row) * AX, oy = CY - (col + row) * AY - 3 * AY * 2 + (row + col) * AY;
+    const bx = CX + (col - 1.5) * AX * 2, by = CY - 3 * AY + (col - 1.5) * 0;
+    // top face: x goes right-down, y goes left-down
+    const x0 = CX + (col - row) * AX;
+    const y0 = CY - 96 + (col + row) * AY;
+    return [
+      [x0, y0],
+      [x0 + AX, y0 + AY],
+      [x0, y0 + 2*AY],
+      [x0 - AX, y0 + AY],
+    ];
+  } else if (face === 'left') {
+    const x0 = CX - 3*AX + col * AX - row * AX;
+    const y0 = CY + col * AY + row * AY;
+    return [
+      [x0, y0],
+      [x0 + AX, y0 + AY],
+      [x0 + AX, y0 + AY + S],
+      [x0, y0 + S],
+    ];
+  } else { // right
+    const x0 = CX + col * AX + row * AX;
+    const y0 = CY - col * AY + row * AY;
+    return [
+      [x0, y0],
+      [x0 + AX, y0 - AY],
+      [x0 + AX, y0 - AY + S],
+      [x0, y0 + S],
+    ];
+  }
+}
+
+function drawFace(faceName, faceType) {
+  const f = faces[faceName];
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      const pts = project(faceType, r, c);
+      const color = COLORS[f[r * 3 + c]];
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(10,10,16,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawFace('U', 'top');
+  drawFace('L', 'left');
+  drawFace('R', 'right');
+}
+
+function isSolved() {
+  for (const name of FACE_NAMES) {
+    const f = faces[name];
+    if (!f.every(c => c === f[0])) return false;
+  }
+  return true;
+}
+
+function updateStats() {
+  document.getElementById('moves').textContent = moveCount;
+  document.getElementById('state').textContent = isSolved() ? 'Solved' : 'Scrambled';
+  document.getElementById('state').style.color = isSolved() ? '#A7C080' : '#DBBC7F';
+}
+
+function doMove(m, ccw) {
+  if (animating) { moveQueue.push([m, ccw]); return; }
+  applyMove(m, !!ccw);
+  moveCount++;
+  draw();
+  updateStats();
+}
+
+function scramble() {
+  const moves = 'UDLRFB';
+  moveCount = 0;
+  let i = 0;
+  animating = true;
+  function next() {
+    if (i >= 20) { animating = false; updateStats(); processQueue(); return; }
+    const m = moves[Math.floor(Math.random() * 6)];
+    const ccw = Math.random() > 0.5;
+    applyMove(m, ccw);
+    moveCount++;
+    draw();
+    i++;
+    setTimeout(next, 50);
+  }
+  next();
+}
+
+function processQueue() {
+  if (moveQueue.length > 0) {
+    const [m, ccw] = moveQueue.shift();
+    doMove(m, ccw);
+  }
+}
+
+function resetCube() {
+  initFaces();
+  moveCount = 0;
+  moveQueue = [];
+  animating = false;
+  draw();
+  updateStats();
+}
+
+// Click detection on canvas
+canvas.addEventListener('click', (e) => {
+  if (animating) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Simple region detection
+  if (y < CY - 20) {
+    doMove('U'); // top area
+  } else if (x < CX) {
+    doMove('L'); // left area
+  } else {
+    doMove('R'); // right area
+  }
+});
+
+initFaces();
+draw();
+updateStats();
+</script>
+</body>
+</html>

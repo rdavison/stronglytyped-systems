@@ -1,4 +1,4 @@
 target/
 node_modules/
 .playwright-mcp/
-*.png
+/*.png

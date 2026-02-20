@@ -11,29 +11,23 @@ pub struct Project {
     pub url: Option<&'static str>,
     pub source: Option<&'static str>,
     pub demos: &'static [(&'static str, &'static str)],
+    pub screenshot: Option<&'static str>,
 }
 
 fn get_projects() -> Vec<Project> {
     vec![
         Project {
             name: "Coself",
-            description: "AI agent system that orchestrates LLM reasoning across Discord, WhatsApp, and HTTP through a single brain with persistent memory. Event-driven runtime with typed dispatch routes to scoped programs. Combines probabilistic reasoning with formal verification via Prolog, Lean 4, Futhark, and MiniZinc.",
-            tags: &["Rust", "AI", "Axum", "Tokio", "Lean 4"],
+            description: "AI agent system that orchestrates LLM reasoning across Discord, WhatsApp, and HTTP through a single brain with persistent memory. Event-driven runtime with typed dispatch routes to scoped programs. Native macOS portal renders live state as a spatial field \u{2014} beliefs, conversation topology, and reasoning visualized on a GPU-rendered canvas with 11 rendering modes.",
+            tags: &["Rust", "AI", "Axum", "Tokio", "Lean 4", "egui", "SwiftUI"],
             url: None,
             source: Some("https://github.com/rdavison/coself"),
-            demos: &[],
-        },
-        Project {
-            name: "Coself Portal",
-            description: "Native macOS application that renders live agent state as a spatial field \u{2014} beliefs, conversation topology, and internal reasoning visualized on a GPU-rendered canvas. 11 rendering modes including a force-directed belief particle system, trip planner with animated route arcs, and a conversational interface powered by the Coself brain.",
-            tags: &["Rust", "egui", "SwiftUI", "WebSocket"],
-            url: None,
-            source: None,
             demos: &[
                 ("Dashboard", "/demos/dashboard.html"),
                 ("Conversation", "/demos/conversation.html"),
                 ("Trip Planner", "/demos/trip.html"),
             ],
+            screenshot: Some("/screenshots/coself.png"),
         },
         Project {
             name: "qwerkey",
@@ -41,7 +35,8 @@ fn get_projects() -> Vec<Project> {
             tags: &["OCaml", "Bonsai", "js_of_ocaml", "SVG"],
             url: None,
             source: Some("https://github.com/rdavison/qwerkey"),
-            demos: &[],
+            demos: &[("Demo", "/demos/qwerkey.html")],
+            screenshot: Some("/screenshots/qwerkey.png"),
         },
         Project {
             name: "sferrakl",
@@ -49,7 +44,8 @@ fn get_projects() -> Vec<Project> {
             tags: &["Rust", "Leptos", "WASM", "SSR"],
             url: None,
             source: None,
-            demos: &[],
+            demos: &[("Demo", "/demos/sferrakl.html")],
+            screenshot: Some("/screenshots/sferrakl.png"),
         },
         Project {
             name: "Rektangle",
@@ -57,7 +53,8 @@ fn get_projects() -> Vec<Project> {
             tags: &["Swift", "macOS", "CoreGraphics", "CVDisplayLink"],
             url: None,
             source: Some("https://github.com/rdavison/Rectangle"),
-            demos: &[],
+            demos: &[("Demo", "/demos/rektangle.html")],
+            screenshot: Some("/screenshots/rektangle.png"),
         },
         Project {
             name: "cubesim",
@@ -65,7 +62,8 @@ fn get_projects() -> Vec<Project> {
             tags: &["Rust", "Bevy", "3D", "Game Engine"],
             url: None,
             source: Some("https://github.com/rdavison/cubesim"),
-            demos: &[],
+            demos: &[("Demo", "/demos/cubesim.html")],
+            screenshot: Some("/screenshots/cubesim.png"),
         },
         Project {
             name: "stronglytyped.systems",
@@ -74,6 +72,7 @@ fn get_projects() -> Vec<Project> {
             url: Some("https://stronglytyped.systems"),
             source: None,
             demos: &[],
+            screenshot: None,
         },
     ]
 }

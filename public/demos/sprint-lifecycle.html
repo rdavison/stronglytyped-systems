@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coself — Sprint Lifecycle</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a10;
+    --surface: #12121a;
+    --border: #232332;
+    --text: #d7d7e1;
+    --text-muted: #828296;
+    --text-dim: #46465a;
+    --accent: #5a8cff;
+    --accent-secondary: #966eff;
+    --healthy: #46be6e;
+    --warning: #dcaa32;
+    --error: #dc4646;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); height: 100vh; overflow: hidden; }
+
+  .portal { width: 100%; height: 100%; padding: 32px 40px; display: flex; flex-direction: column; }
+
+  .title-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .title-bar h1 { font-family: var(--font-mono); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); }
+  .title-bar .cycle { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+
+  /* Sprint lifecycle visualization */
+  .lifecycle { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+  .phase-row { display: flex; align-items: center; gap: 12px; position: relative; }
+
+  .phase-number { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); width: 20px; text-align: right; flex-shrink: 0; }
+
+  .phase-node { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
+  .phase-node.complete { background: rgba(70, 190, 110, 0.15); border: 1.5px solid var(--healthy); }
+  .phase-node.active { background: rgba(90, 140, 255, 0.15); border: 1.5px solid var(--accent); animation: pulse 2s ease-in-out infinite; }
+  .phase-node.pending { background: rgba(70, 70, 90, 0.15); border: 1.5px solid var(--border); }
+  .phase-node .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .phase-node.complete .dot { background: var(--healthy); }
+  .phase-node.active .dot { background: var(--accent); }
+  .phase-node.pending .dot { background: var(--text-dim); }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(90, 140, 255, 0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(90, 140, 255, 0); }
+  }
+
+  .phase-content { flex: 1; }
+  .phase-name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; margin-bottom: 2px; }
+  .phase-node.complete + .phase-content .phase-name { color: var(--healthy); }
+  .phase-node.active + .phase-content .phase-name { color: var(--accent); }
+  .phase-node.pending + .phase-content .phase-name { color: var(--text-dim); }
+  .phase-desc { font-size: 10px; color: var(--text-muted); }
+
+  .phase-agents { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
+  .agent-pill { font-family: var(--font-mono); font-size: 8px; padding: 2px 8px; border-radius: 10px; }
+  .agent-pill.formalist { background: rgba(90, 140, 255, 0.12); color: var(--accent); border: 1px solid rgba(90, 140, 255, 0.2); }
+  .agent-pill.engineer { background: rgba(70, 190, 110, 0.12); color: var(--healthy); border: 1px solid rgba(70, 190, 110, 0.2); }
+  .agent-pill.child { background: rgba(150, 110, 255, 0.12); color: var(--accent-secondary); border: 1px solid rgba(150, 110, 255, 0.2); }
+  .agent-pill.adversary { background: rgba(220, 70, 70, 0.12); color: var(--error); border: 1px solid rgba(220, 70, 70, 0.2); }
+  .agent-pill.ux { background: rgba(220, 170, 50, 0.12); color: var(--warning); border: 1px solid rgba(220, 170, 50, 0.2); }
+  .agent-pill.qa { background: rgba(150, 110, 255, 0.12); color: #b896ff; border: 1px solid rgba(150, 110, 255, 0.2); }
+
+  .connector { width: 2px; height: 12px; background: var(--border); margin-left: 47px; }
+  .connector.done { background: rgba(70, 190, 110, 0.3); }
+
+  .phase-duration { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); margin-left: 12px; flex-shrink: 0; width: 50px; text-align: right; }
+
+  .sprint-meta { display: flex; gap: 24px; padding-top: 16px; margin-top: auto; border-top: 1px solid var(--border); }
+  .meta-item { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); }
+  .meta-item span { color: var(--text-muted); }
+
+  .recurse-arrow { font-family: var(--font-mono); font-size: 9px; color: var(--accent-secondary); margin-left: 47px; margin-top: 4px; opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="portal">
+  <div class="title-bar">
+    <h1>Sprint Lifecycle</h1>
+    <span class="cycle">Cycle 3 &middot; Sprint 2 of 10</span>
+  </div>
+
+  <div class="lifecycle">
+    <div class="phase-row">
+      <span class="phase-number">1</span>
+      <div class="phase-node complete"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">Research</div>
+        <div class="phase-desc">QA feedback loop — explore problem space, gather context</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill formalist">Formalist</span>
+        <span class="agent-pill engineer">Engineer</span>
+      </div>
+      <span class="phase-duration">14m</span>
+    </div>
+    <div class="connector done"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">2</span>
+      <div class="phase-node complete"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">Desugaring Pass</div>
+        <div class="phase-desc">3-way tournament: Formalist &rarr; UX Designer &rarr; Adversary</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill formalist">Formalist</span>
+        <span class="agent-pill ux">UX</span>
+        <span class="agent-pill adversary">Adversary</span>
+      </div>
+      <span class="phase-duration">8m</span>
+    </div>
+    <div class="connector done"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">3</span>
+      <div class="phase-node complete"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">Scope</div>
+        <div class="phase-desc">Define deliverables, write sets, exit criteria</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill engineer">Engineer</span>
+      </div>
+      <span class="phase-duration">3m</span>
+    </div>
+    <div class="connector done"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">4</span>
+      <div class="phase-node complete"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">DSL Design</div>
+        <div class="phase-desc">Logician + Child propose the formal contract</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill formalist">Formalist</span>
+        <span class="agent-pill child">Child</span>
+      </div>
+      <span class="phase-duration">11m</span>
+    </div>
+    <div class="connector done"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">5</span>
+      <div class="phase-node active"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">Implementation</div>
+        <div class="phase-desc">Build until tests pass — all engines writing code</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill engineer">Engineer</span>
+        <span class="agent-pill formalist">Formalist</span>
+      </div>
+      <span class="phase-duration">22m...</span>
+    </div>
+    <div class="connector"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">6</span>
+      <div class="phase-node pending"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">Docs &amp; UX Feedback</div>
+        <div class="phase-desc">Document changes, gather Self's feedback</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill ux">UX</span>
+      </div>
+      <span class="phase-duration">&mdash;</span>
+    </div>
+    <div class="connector"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">7</span>
+      <div class="phase-node pending"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">QA</div>
+        <div class="phase-desc">Non-functional + Security + Compliance agents review</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill qa">QA</span>
+        <span class="agent-pill adversary">Adversary</span>
+      </div>
+      <span class="phase-duration">&mdash;</span>
+    </div>
+    <div class="connector"></div>
+
+    <div class="phase-row">
+      <span class="phase-number">8</span>
+      <div class="phase-node pending"><div class="dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-name">Report &amp; Recurse</div>
+        <div class="phase-desc">Compile results &rarr; if QA fails, loop back to step 1</div>
+      </div>
+      <div class="phase-agents">
+        <span class="agent-pill formalist">Formalist</span>
+      </div>
+      <span class="phase-duration">&mdash;</span>
+    </div>
+
+    <div class="recurse-arrow">&larr; recurse if QA fails (max 10 sprints per cycle)</div>
+  </div>
+
+  <div class="sprint-meta">
+    <div class="meta-item">Sprint <span>2/10</span></div>
+    <div class="meta-item">Elapsed <span>58m</span></div>
+    <div class="meta-item">Files touched <span>7</span></div>
+    <div class="meta-item">Tests <span>14 pass, 0 fail</span></div>
+    <div class="meta-item">Proofs <span>5 verified</span></div>
+  </div>
+</div>
+</body>
+</html>

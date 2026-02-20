@@ -36,8 +36,11 @@
   <button class="face-btn" onclick="doMove('F')">F</button>
   <button class="face-btn" onclick="doMove('B')">B</button>
   <button class="face-btn" onclick="doMove('U',true)">U'</button>
+  <button class="face-btn" onclick="doMove('D',true)">D'</button>
+  <button class="face-btn" onclick="doMove('L',true)">L'</button>
   <button class="face-btn" onclick="doMove('R',true)">R'</button>
   <button class="face-btn" onclick="doMove('F',true)">F'</button>
+  <button class="face-btn" onclick="doMove('B',true)">B'</button>
 </div>
 <div class="controls">
   <button class="btn accent" onclick="scramble()">Scramble</button>
@@ -55,7 +58,6 @@ const FACE_NAMES = ['U','D','F','B','L','R'];
 
 let faces = {};
 let moveCount = 0;
-let animating = false;
 let moveQueue = [];
 
 // Camera rotation (draggable)
@@ -64,6 +66,10 @@ let rotY = 35 * Math.PI / 180;
 let dragging = false;
 let dragStartX = 0, dragStartY = 0;
 let dragStartRotX = 0, dragStartRotY = 0;
+
+// Animation state
+let anim = null; // { face, ccw, progress, startTime, duration }
+const ANIM_DURATION = 250; // ms per face turn
 
 function initFaces() {
   faces = {};
@@ -132,13 +138,12 @@ function applyMove(m, ccw) {
 }
 
 // ---- True perspective 3D projection ----
-const CUBE_SIZE = 1.5; // half-size of the cube in world units
-const CELL = CUBE_SIZE * 2 / 3; // size of one sticker cell
-const FOV = 600; // field of view (perspective strength)
-const CX = 200, CY = 160; // screen center
+const CUBE_SIZE = 1.5;
+const CELL = CUBE_SIZE * 2 / 3;
+const FOV = 600;
+const CX = 200, CY = 160;
 
 function multiply(a, b) {
-  // 3x3 matrix multiply
   const r = [[0,0,0],[0,0,0],[0,0,0]];
   for (let i = 0; i < 3; i++)
     for (let j = 0; j < 3; j++)
@@ -157,22 +162,123 @@ function rotMatY(a) {
   return [[c,0,s],[0,1,0],[-s,0,c]];
 }
 
-function transform(p) {
-  // Apply rotation then perspective projection
-  const mat = multiply(rotMatX(rotX), rotMatY(rotY));
+function rotMatZ(a) {
+  const c = Math.cos(a), s = Math.sin(a);
+  return [[c,-s,0],[s,c,0],[0,0,1]];
+}
+
+function transformPt(p, mat) {
   const x = mat[0][0]*p[0] + mat[0][1]*p[1] + mat[0][2]*p[2];
   const y = mat[1][0]*p[0] + mat[1][1]*p[1] + mat[1][2]*p[2];
   const z = mat[2][0]*p[0] + mat[2][1]*p[1] + mat[2][2]*p[2];
-  const depth = z + 6; // push back so it's always in front of camera
-  const scale = FOV / depth;
-  return { sx: CX + x * scale, sy: CY - y * scale, z: z };
+  return [x, y, z];
 }
 
-// Generate the 4 corners of a sticker on a given face
+function project(p) {
+  const depth = p[2] + 6;
+  const scale = FOV / depth;
+  return { sx: CX + p[0] * scale, sy: CY - p[1] * scale, z: p[2] };
+}
+
+// Get the rotation axis and which stickers are affected by a face move
+function getFaceAxis(faceName) {
+  switch (faceName) {
+    case 'U': return { axis: [0, 1, 0], layer: 1 };  // +Y
+    case 'D': return { axis: [0, -1, 0], layer: 1 };  // -Y
+    case 'F': return { axis: [0, 0, 1], layer: 1 };   // +Z
+    case 'B': return { axis: [0, 0, -1], layer: 1 };  // -Z
+    case 'L': return { axis: [-1, 0, 0], layer: 1 };  // -X
+    case 'R': return { axis: [1, 0, 0], layer: 1 };   // +X
+  }
+}
+
+// Determine which face stickers participate in a face move (face itself + adjacent strips)
+function getAffectedStickers(moveFace) {
+  // Returns set of { face, row, col } that should rotate during animation
+  const affected = [];
+  // The face itself: all 9 stickers
+  for (let r = 0; r < 3; r++)
+    for (let c = 0; c < 3; c++)
+      affected.push({ face: moveFace, r, c });
+
+  // Adjacent strips
+  switch (moveFace) {
+    case 'U':
+      for (let c = 0; c < 3; c++) {
+        affected.push({ face: 'F', r: 0, c });
+        affected.push({ face: 'R', r: 0, c });
+        affected.push({ face: 'B', r: 0, c });
+        affected.push({ face: 'L', r: 0, c });
+      }
+      break;
+    case 'D':
+      for (let c = 0; c < 3; c++) {
+        affected.push({ face: 'F', r: 2, c });
+        affected.push({ face: 'R', r: 2, c });
+        affected.push({ face: 'B', r: 2, c });
+        affected.push({ face: 'L', r: 2, c });
+      }
+      break;
+    case 'F':
+      for (let i = 0; i < 3; i++) {
+        affected.push({ face: 'U', r: 2, c: i });
+        affected.push({ face: 'D', r: 0, c: i });
+        affected.push({ face: 'L', r: i, c: 2 });
+        affected.push({ face: 'R', r: i, c: 0 });
+      }
+      break;
+    case 'B':
+      for (let i = 0; i < 3; i++) {
+        affected.push({ face: 'U', r: 0, c: i });
+        affected.push({ face: 'D', r: 2, c: i });
+        affected.push({ face: 'L', r: i, c: 0 });
+        affected.push({ face: 'R', r: i, c: 2 });
+      }
+      break;
+    case 'L':
+      for (let i = 0; i < 3; i++) {
+        affected.push({ face: 'U', r: i, c: 0 });
+        affected.push({ face: 'D', r: i, c: 0 });
+        affected.push({ face: 'F', r: i, c: 0 });
+        affected.push({ face: 'B', r: i, c: 2 });
+      }
+      break;
+    case 'R':
+      for (let i = 0; i < 3; i++) {
+        affected.push({ face: 'U', r: i, c: 2 });
+        affected.push({ face: 'D', r: i, c: 2 });
+        affected.push({ face: 'F', r: i, c: 2 });
+        affected.push({ face: 'B', r: i, c: 0 });
+      }
+      break;
+  }
+  return affected;
+}
+
+// Build the rotation matrix for animating a face turn
+function faceAnimMatrix(faceName, angle) {
+  switch (faceName) {
+    case 'U': return rotMatY(angle);
+    case 'D': return rotMatY(-angle);
+    case 'R': return rotMatX(angle);
+    case 'L': return rotMatX(-angle);
+    case 'F': return rotMatZ(angle);
+    case 'B': return rotMatZ(-angle);
+  }
+}
+
+// Check if a sticker belongs to the animated set
+function isAffected(faceName, r, c, affectedSet) {
+  for (const a of affectedSet) {
+    if (a.face === faceName && a.r === r && a.c === c) return true;
+  }
+  return false;
+}
+
 function stickerQuad(faceName, row, col) {
   const s = CUBE_SIZE;
   const c = CELL;
-  const gap = 0.04; // gap between stickers
+  const gap = 0.04;
   const r0 = -s + col * c + gap;
   const r1 = -s + (col + 1) * c - gap;
   const c0 = s - row * c - gap;
@@ -180,18 +286,12 @@ function stickerQuad(faceName, row, col) {
 
   let pts;
   switch (faceName) {
-    case 'U': // y = +s
-      pts = [[r0,s,-c0],[r1,s,-c0],[r1,s,-c1],[r0,s,-c1]]; break;
-    case 'D': // y = -s
-      pts = [[r0,-s,c0],[r1,-s,c0],[r1,-s,c1],[r0,-s,c1]]; break;
-    case 'F': // z = +s
-      pts = [[r0,c0,s],[r1,c0,s],[r1,c1,s],[r0,c1,s]]; break;
-    case 'B': // z = -s
-      pts = [[r1,c0,-s],[r0,c0,-s],[r0,c1,-s],[r1,c1,-s]]; break;
-    case 'L': // x = -s
-      pts = [[-s,c0,-r0],[-s,c0,-r1],[-s,c1,-r1],[-s,c1,-r0]]; break;
-    case 'R': // x = +s
-      pts = [[s,c0,r0],[s,c0,r1],[s,c1,r1],[s,c1,r0]]; break;
+    case 'U': pts = [[r0,s,-c0],[r1,s,-c0],[r1,s,-c1],[r0,s,-c1]]; break;
+    case 'D': pts = [[r0,-s,c0],[r1,-s,c0],[r1,-s,c1],[r0,-s,c1]]; break;
+    case 'F': pts = [[r0,c0,s],[r1,c0,s],[r1,c1,s],[r0,c1,s]]; break;
+    case 'B': pts = [[r1,c0,-s],[r0,c0,-s],[r0,c1,-s],[r1,c1,-s]]; break;
+    case 'L': pts = [[-s,c0,-r0],[-s,c0,-r1],[-s,c1,-r1],[-s,c1,-r0]]; break;
+    case 'R': pts = [[s,c0,r0],[s,c0,r1],[s,c1,r1],[s,c1,r0]]; break;
   }
   return pts;
 }
@@ -229,34 +329,46 @@ function drawQuad(screenPts, color) {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Compute rotation matrix for face visibility
-  const mat = multiply(rotMatX(rotX), rotMatY(rotY));
+  const cameraMat = multiply(rotMatX(rotX), rotMatY(rotY));
 
-  // Collect all visible stickers with depth info
+  // Build the face animation rotation matrix if animating
+  let animMat = null;
+  let affectedSet = null;
+  if (anim) {
+    animMat = faceAnimMatrix(anim.face, anim.currentAngle);
+    affectedSet = getAffectedStickers(anim.face);
+  }
+
+  const lightDir = [0.3, 0.7, -0.8];
+  const lLen = Math.sqrt(lightDir[0]**2 + lightDir[1]**2 + lightDir[2]**2);
+
   const stickers = [];
 
   for (const faceName of FACE_NAMES) {
-    // Check if face is visible (dot product of normal with view direction > 0)
-    const n = faceNormal(faceName);
-    const tn = [
-      mat[0][0]*n[0] + mat[0][1]*n[1] + mat[0][2]*n[2],
-      mat[1][0]*n[0] + mat[1][1]*n[1] + mat[1][2]*n[2],
-      mat[2][0]*n[0] + mat[2][1]*n[1] + mat[2][2]*n[2]
-    ];
-    // Face is visible if it faces the camera (z component < 0 in our setup)
-    if (tn[2] >= 0.01) continue;
-
-    // Lighting: use the normal to compute brightness
-    const lightDir = [0.3, 0.7, -0.8]; // light from upper-right-front
-    const lLen = Math.sqrt(lightDir[0]**2 + lightDir[1]**2 + lightDir[2]**2);
-    const dot = -(tn[0]*lightDir[0] + tn[1]*lightDir[1] + tn[2]*lightDir[2]) / lLen;
-    const brightness = 0.55 + 0.45 * Math.max(0, dot);
-
     const faceData = faces[faceName];
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
-        const pts3d = stickerQuad(faceName, r, c);
-        const screenPts = pts3d.map(p => transform(p));
+        let pts3d = stickerQuad(faceName, r, c);
+        let normal = faceNormal(faceName);
+
+        // If this sticker is part of the animated face, apply the face rotation
+        if (anim && isAffected(faceName, r, c, affectedSet)) {
+          pts3d = pts3d.map(p => transformPt(p, animMat));
+          normal = transformPt(normal, animMat);
+        }
+
+        // Apply camera rotation
+        const camPts = pts3d.map(p => transformPt(p, cameraMat));
+        const camNormal = transformPt(normal, cameraMat);
+
+        // Back-face culling
+        if (camNormal[2] >= 0.01) continue;
+
+        // Lighting
+        const dot = -(camNormal[0]*lightDir[0] + camNormal[1]*lightDir[1] + camNormal[2]*lightDir[2]) / lLen;
+        const brightness = 0.55 + 0.45 * Math.max(0, dot);
+
+        const screenPts = camPts.map(p => project(p));
         const avgZ = screenPts.reduce((sum, p) => sum + p.z, 0) / 4;
         stickers.push({
           screenPts,
@@ -267,14 +379,7 @@ function draw() {
     }
   }
 
-  // Draw cube body (dark silhouette behind stickers)
-  const corners3d = [];
-  for (const x of [-CUBE_SIZE, CUBE_SIZE])
-    for (const y of [-CUBE_SIZE, CUBE_SIZE])
-      for (const z of [-CUBE_SIZE, CUBE_SIZE])
-        corners3d.push(transform([x, y, z]));
-
-  // Sort stickers back-to-front
+  // Sort stickers back-to-front (painter's algorithm)
   stickers.sort((a, b) => b.z - a.z);
   for (const s of stickers) {
     drawQuad(s.screenPts, s.color);
@@ -295,28 +400,48 @@ function updateStats() {
   document.getElementById('state').style.color = isSolved() ? '#A7C080' : '#DBBC7F';
 }
 
-function doMove(m, ccw) {
-  if (animating) { moveQueue.push([m, ccw]); return; }
-  applyMove(m, !!ccw);
-  moveCount++;
-  draw();
-  updateStats();
+// Easing function: smooth deceleration
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
 }
 
-function scramble() {
-  const moves = 'UDLRFB';
-  moveCount = 0;
-  let i = 0;
-  animating = true;
-  function next() {
-    if (i >= 20) { animating = false; updateStats(); processQueue(); return; }
-    applyMove(moves[Math.floor(Math.random() * 6)], Math.random() > 0.5);
+function animateTurn() {
+  if (!anim) return;
+  const now = performance.now();
+  const elapsed = now - anim.startTime;
+  const t = Math.min(1, elapsed / anim.duration);
+  const eased = easeOutCubic(t);
+
+  const targetAngle = anim.ccw ? Math.PI / 2 : -Math.PI / 2;
+  anim.currentAngle = targetAngle * eased;
+
+  draw();
+
+  if (t < 1) {
+    requestAnimationFrame(animateTurn);
+  } else {
+    // Animation complete — apply the actual state change
+    applyMove(anim.face, anim.ccw);
+    anim = null;
     moveCount++;
+    updateStats();
     draw();
-    i++;
-    setTimeout(next, 50);
+    processQueue();
   }
-  next();
+}
+
+function doMove(m, ccw) {
+  if (anim) { moveQueue.push([m, !!ccw]); return; }
+  // Start animated turn
+  anim = {
+    face: m,
+    ccw: !!ccw,
+    progress: 0,
+    startTime: performance.now(),
+    duration: ANIM_DURATION,
+    currentAngle: 0,
+  };
+  requestAnimationFrame(animateTurn);
 }
 
 function processQueue() {
@@ -326,16 +451,60 @@ function processQueue() {
   }
 }
 
+function scramble() {
+  const moves = 'UDLRFB';
+  moveCount = 0;
+  moveQueue = [];
+  // Queue 20 random moves with fast animation
+  for (let i = 0; i < 20; i++) {
+    const m = moves[Math.floor(Math.random() * 6)];
+    const ccw = Math.random() > 0.5;
+    moveQueue.push([m, ccw]);
+  }
+  // Override animation duration for scramble
+  const origDuration = ANIM_DURATION;
+  const fastScramble = () => {
+    if (moveQueue.length === 0) return;
+    const [m, ccw] = moveQueue.shift();
+    anim = {
+      face: m, ccw, progress: 0,
+      startTime: performance.now(),
+      duration: 50,
+      currentAngle: 0,
+    };
+    const tick = () => {
+      const now = performance.now();
+      const elapsed = now - anim.startTime;
+      const t = Math.min(1, elapsed / anim.duration);
+      const targetAngle = anim.ccw ? Math.PI / 2 : -Math.PI / 2;
+      anim.currentAngle = targetAngle * easeOutCubic(t);
+      draw();
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        applyMove(anim.face, anim.ccw);
+        moveCount++;
+        anim = null;
+        draw();
+        updateStats();
+        fastScramble();
+      }
+    };
+    requestAnimationFrame(tick);
+  };
+  fastScramble();
+}
+
 function resetCube() {
   initFaces();
   moveCount = 0;
   moveQueue = [];
-  animating = false;
+  anim = null;
   draw();
   updateStats();
 }
 
-// Mouse drag to rotate
+// Mouse drag to rotate — x-axis MIRRORED for natural feel
 canvas.addEventListener('mousedown', (e) => {
   dragging = true;
   dragStartX = e.clientX;
@@ -348,42 +517,13 @@ window.addEventListener('mousemove', (e) => {
   if (!dragging) return;
   const dx = e.clientX - dragStartX;
   const dy = e.clientY - dragStartY;
-  rotY = dragStartRotY + dx * 0.008;
+  rotY = dragStartRotY - dx * 0.008; // MIRRORED: negative dx
   rotX = dragStartRotX - dy * 0.008;
-  // Clamp vertical rotation
   rotX = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, rotX));
   draw();
 });
 
 window.addEventListener('mouseup', () => { dragging = false; });
-
-// Click on face buttons (not drag) — detect by checking if mouse didn't move
-canvas.addEventListener('click', (e) => {
-  if (animating) return;
-  const dx = Math.abs(e.clientX - dragStartX);
-  const dy = Math.abs(e.clientY - dragStartY);
-  if (dx > 3 || dy > 3) return; // was a drag, not a click
-
-  // Determine which visible face was clicked using raycast approximation
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const my = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-  // Simple heuristic: which face center is closest to click?
-  const mat = multiply(rotMatX(rotX), rotMatY(rotY));
-  let bestFace = null, bestDist = Infinity;
-  for (const faceName of FACE_NAMES) {
-    const n = faceNormal(faceName);
-    const tn2 = mat[2][0]*n[0] + mat[2][1]*n[1] + mat[2][2]*n[2];
-    if (tn2 >= 0) continue; // not visible
-
-    const center = faceNormal(faceName).map(v => v * CUBE_SIZE);
-    const sc = transform(center);
-    const dist = Math.sqrt((sc.sx - mx)**2 + (sc.sy - my)**2);
-    if (dist < bestDist) { bestDist = dist; bestFace = faceName; }
-  }
-  if (bestFace && bestDist < 120) doMove(bestFace);
-});
 
 // Gentle idle rotation
 let idleAnim = null;
@@ -392,7 +532,7 @@ function startIdle() {
   idleAnim = requestAnimationFrame(idleTick);
 }
 function idleTick() {
-  if (dragging) return;
+  if (dragging || anim) { idleAnim = requestAnimationFrame(idleTick); return; }
   rotY += 0.003;
   draw();
   idleAnim = requestAnimationFrame(idleTick);

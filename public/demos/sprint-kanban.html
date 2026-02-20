@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coself — Sprint Kanban</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a10;
+    --surface: #12121a;
+    --border: #232332;
+    --text: #d7d7e1;
+    --text-muted: #828296;
+    --text-dim: #46465a;
+    --accent: #5a8cff;
+    --accent-secondary: #966eff;
+    --healthy: #46be6e;
+    --warning: #dcaa32;
+    --error: #dc4646;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); height: 100vh; overflow: hidden; }
+
+  .portal { width: 100%; height: 100%; padding: 32px 40px; display: flex; flex-direction: column; }
+
+  .title-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .title-bar h1 { font-family: var(--font-mono); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); }
+  .sprint-label { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+
+  .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; flex: 1; overflow: hidden; }
+
+  .column { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .column-header { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .column-count { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+
+  .column-cards { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; cursor: default; transition: border-color 0.2s; }
+  .card:hover { border-color: rgba(90, 140, 255, 0.3); }
+
+  .card-title { font-size: 11px; font-weight: 500; margin-bottom: 6px; line-height: 1.4; }
+  .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+  .card-agent { font-family: var(--font-mono); font-size: 8px; padding: 2px 6px; border-radius: 8px; }
+  .card-agent.formalist { background: rgba(90, 140, 255, 0.12); color: var(--accent); }
+  .card-agent.engineer { background: rgba(70, 190, 110, 0.12); color: var(--healthy); }
+  .card-agent.child { background: rgba(150, 110, 255, 0.12); color: var(--accent-secondary); }
+  .card-agent.adversary { background: rgba(220, 70, 70, 0.12); color: var(--error); }
+  .card-agent.ux { background: rgba(220, 170, 50, 0.12); color: var(--warning); }
+  .card-agent.qa { background: rgba(150, 110, 255, 0.12); color: #b896ff; }
+
+  .card-file { font-family: var(--font-mono); font-size: 8px; color: var(--text-dim); }
+
+  .card.active { border-color: rgba(90, 140, 255, 0.4); }
+  .card.active .card-title { color: var(--accent); }
+
+  .agent-activity { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); }
+  .agent-activity-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+
+  .agent-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .agent-status { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .agent-status.working { background: var(--accent); animation: blink 1.5s ease-in-out infinite; }
+  .agent-status.idle { background: var(--text-dim); }
+  .agent-name { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); width: 70px; }
+  .agent-task { font-size: 10px; color: var(--text-dim); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-task.active-task { color: var(--text-muted); }
+
+  @keyframes blink {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="portal">
+  <div class="title-bar">
+    <h1>Sprint Kanban</h1>
+    <span class="sprint-label">Event Runtime &middot; Sprint 003</span>
+  </div>
+
+  <div class="kanban">
+    <!-- Backlog -->
+    <div class="column">
+      <div class="column-header">Backlog <span class="column-count">3</span></div>
+      <div class="column-cards">
+        <div class="card">
+          <div class="card-title">Add property-based tests for belief propagation</div>
+          <div class="card-meta">
+            <span class="card-agent engineer">Engineer</span>
+            <span class="card-file">src/beliefs.rs</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Wire canvas scene streaming over WebSocket</div>
+          <div class="card-meta">
+            <span class="card-agent engineer">Engineer</span>
+            <span class="card-file">src/server.rs</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Profile Futhark kernel launch latency</div>
+          <div class="card-meta">
+            <span class="card-agent formalist">Formalist</span>
+            <span class="card-file">futhark/</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="column">
+      <div class="column-header">In Progress <span class="column-count">2</span></div>
+      <div class="column-cards">
+        <div class="card active">
+          <div class="card-title">Implement dispatch switch for scoped programs</div>
+          <div class="card-meta">
+            <span class="card-agent engineer">Engineer</span>
+            <span class="card-agent formalist">Formalist</span>
+            <span class="card-file">src/brain.rs</span>
+          </div>
+        </div>
+        <div class="card active">
+          <div class="card-title">Desugaring pass: simplify program hint routing</div>
+          <div class="card-meta">
+            <span class="card-agent adversary">Adversary</span>
+            <span class="card-agent ux">UX</span>
+            <span class="card-file">src/runtime.rs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review -->
+    <div class="column">
+      <div class="column-header">Review <span class="column-count">2</span></div>
+      <div class="column-cards">
+        <div class="card">
+          <div class="card-title">Define typed Event enum for kernel routing</div>
+          <div class="card-meta">
+            <span class="card-agent formalist">Formalist</span>
+            <span class="card-file">src/kernel.rs</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Lean 4 proofs for action dependency chains</div>
+          <div class="card-meta">
+            <span class="card-agent formalist">Formalist</span>
+            <span class="card-file">lean/Coself/</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done -->
+    <div class="column">
+      <div class="column-header">Done <span class="column-count">4</span></div>
+      <div class="column-cards">
+        <div class="card">
+          <div class="card-title">Brain refactor: extract gateway wiring</div>
+          <div class="card-meta">
+            <span class="card-agent engineer">Engineer</span>
+            <span class="card-file">src/brain.rs</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Add !monolith kill switch</div>
+          <div class="card-meta">
+            <span class="card-agent engineer">Engineer</span>
+            <span class="card-file">src/main.rs</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Inject SystemState snapshot into prompts</div>
+          <div class="card-meta">
+            <span class="card-agent formalist">Formalist</span>
+            <span class="card-file">src/brain.rs</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Synthetic history for short-circuit commands</div>
+          <div class="card-meta">
+            <span class="card-agent engineer">Engineer</span>
+            <span class="card-file">src/discord.rs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="agent-activity">
+    <div class="agent-activity-title">Agent Activity</div>
+    <div class="agent-row">
+      <div class="agent-status working"></div>
+      <span class="agent-name">Engineer</span>
+      <span class="agent-task active-task">Writing dispatch match arms for scoped programs...</span>
+    </div>
+    <div class="agent-row">
+      <div class="agent-status working"></div>
+      <span class="agent-name">Adversary</span>
+      <span class="agent-task active-task">Attacking program hint routing for complexity theater...</span>
+    </div>
+    <div class="agent-row">
+      <div class="agent-status idle"></div>
+      <span class="agent-name">Formalist</span>
+      <span class="agent-task">Awaiting review approval on kernel types</span>
+    </div>
+    <div class="agent-row">
+      <div class="agent-status idle"></div>
+      <span class="agent-name">Child</span>
+      <span class="agent-task">Observing — synthesizing from defeat in DSL debate</span>
+    </div>
+    <div class="agent-row">
+      <div class="agent-status idle"></div>
+      <span class="agent-name">UX</span>
+      <span class="agent-task">Co-reviewing desugaring pass with Adversary</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

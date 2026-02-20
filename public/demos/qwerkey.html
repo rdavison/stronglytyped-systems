@@ -10,6 +10,16 @@
   body { background: #0a0a10; color: #D3C6AA; font-family: 'Inter', sans-serif; overflow: hidden; }
 
   .container { display: flex; height: 100vh; }
+  .main-area { flex: 1; display: flex; flex-direction: column; }
+
+  /* Tab bar */
+  .tab-bar { display: flex; border-bottom: 1px solid rgba(167,192,128,0.1); padding: 0 20px; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 10px 16px; background: transparent; border: none; color: #7A8478; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: #C4A882; border-bottom-color: #C4A882; }
+  .tab:hover { color: #D3C6AA; }
+
+  /* Typing panel */
+  .typing-panel { flex: 1; display: flex; flex-direction: column; }
   .keyboard-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
   .sidebar { width: 200px; padding: 20px; border-left: 1px solid rgba(167,192,128,0.1); display: flex; flex-direction: column; gap: 16px; }
 
@@ -39,49 +49,115 @@
 
   .speed-bar { width: 100%; height: 4px; background: rgba(167,192,128,0.08); border-radius: 2px; overflow: hidden; }
   .speed-fill { height: 100%; background: #A7C080; border-radius: 2px; transition: width 0.3s; }
+
+  .loop-indicator { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #7A8478; text-align: center; margin-top: 8px; opacity: 0; transition: opacity 0.5s; }
+  .loop-indicator.visible { opacity: 1; }
+
+  /* Analytics panel */
+  .analytics-panel { flex: 1; padding: 24px; overflow-y: auto; display: none; }
+  .analytics-panel.active { display: block; }
+  .typing-panel-wrap { display: flex; flex: 1; }
+  .typing-panel-wrap.hidden { display: none; }
+
+  .chart-section { margin-bottom: 32px; }
+  .chart-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #C4A882; margin-bottom: 12px; }
+  .chart-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .chart-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #7A8478; width: 70px; text-align: right; flex-shrink: 0; }
+  .chart-bar-bg { flex: 1; height: 18px; background: rgba(167,192,128,0.04); border-radius: 3px; overflow: hidden; position: relative; }
+  .chart-bar { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1); width: 0; }
+  .chart-value { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #D3C6AA; opacity: 0.8; }
+
+  .heatmap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px; }
+  .heatmap-card { background: rgba(18,18,26,0.6); border: 1px solid rgba(167,192,128,0.07); border-radius: 6px; padding: 12px; }
+  .heatmap-card-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #7A8478; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .fingers-row { display: flex; gap: 3px; justify-content: center; }
+  .finger-cell { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: rgba(211,198,170,0.7); }
+  .finger-labels { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
+  .finger-labels span { width: 28px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 7px; color: #7A8478; }
+  .divider { width: 6px; }
+
+  .legend { display: flex; align-items: center; gap: 16px; margin-top: 20px; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #7A8478; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="keyboard-area">
-    <div class="typing-line" id="typingLine"></div>
-    <div class="kb-container">
-      <svg class="keyboard" id="keyboard" viewBox="0 0 560 200"></svg>
-      <canvas class="finger-canvas" id="fingerCanvas" width="1120" height="400"></canvas>
-    </div>
-  </div>
-  <div class="sidebar">
-    <h3>Layout</h3>
-    <div class="layout-switch" id="layoutSwitch"></div>
-
-    <h3>Stats</h3>
-    <div class="stat">
-      <span class="stat-label">Travel</span>
-      <span class="stat-value" id="travel">0.0 px</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Same-Finger Bigrams</span>
-      <span class="stat-value" id="sfb">0</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Keys Typed</span>
-      <span class="stat-value" id="keysTyped">0</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Alternation</span>
-      <span class="stat-value" id="alternation">—</span>
+  <div class="main-area">
+    <div class="tab-bar">
+      <button class="tab active" id="tabTyping" onclick="switchTab('typing')">Typing</button>
+      <button class="tab" id="tabAnalytics" onclick="switchTab('analytics')">Layout Analytics</button>
     </div>
 
-    <h3>Speed</h3>
-    <div class="speed-bar"><div class="speed-fill" id="speedFill" style="width:0%"></div></div>
+    <div class="typing-panel-wrap" id="typingPanel">
+      <div class="keyboard-area">
+        <div class="typing-line" id="typingLine"></div>
+        <div class="kb-container">
+          <svg class="keyboard" id="keyboard" viewBox="0 0 560 200"></svg>
+          <canvas class="finger-canvas" id="fingerCanvas" width="1120" height="400"></canvas>
+        </div>
+        <div class="loop-indicator" id="loopIndicator">restarting...</div>
+      </div>
+      <div class="sidebar">
+        <h3>Layout</h3>
+        <div class="layout-switch" id="layoutSwitch"></div>
+
+        <h3>Stats</h3>
+        <div class="stat">
+          <span class="stat-label">Travel</span>
+          <span class="stat-value" id="travel">0.0 px</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Same-Finger Bigrams</span>
+          <span class="stat-value" id="sfb">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Keys Typed</span>
+          <span class="stat-value" id="keysTyped">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Alternation</span>
+          <span class="stat-value" id="alternation">—</span>
+        </div>
+
+        <h3>Speed</h3>
+        <div class="speed-bar"><div class="speed-fill" id="speedFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="analytics-panel" id="analyticsPanel">
+      <div id="analyticsCharts"></div>
+      <div class="chart-title" style="margin-top: 32px;">Finger Workload Distribution</div>
+      <div class="heatmap-grid" id="analyticsHeatmaps"></div>
+      <div class="finger-labels" style="max-width: 400px; margin: 8px auto 0;">
+        <span>P</span><span>R</span><span>M</span><span>I</span><div class="divider"></div><span>I</span><span>M</span><span>R</span><span>P</span>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(167,192,128,0.15)"></div>Low</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(167,192,128,0.4)"></div>Medium</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(167,192,128,0.75)"></div>High</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(230,126,128,0.6)"></div>Overloaded</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
+// ---- Tab switching ----
+function switchTab(tab) {
+  document.getElementById('tabTyping').classList.toggle('active', tab === 'typing');
+  document.getElementById('tabAnalytics').classList.toggle('active', tab === 'analytics');
+  document.getElementById('typingPanel').classList.toggle('hidden', tab !== 'typing');
+  document.getElementById('analyticsPanel').classList.toggle('active', tab === 'analytics');
+  if (tab === 'analytics') renderAnalytics();
+}
+
+// ---- Layout definitions ----
 const LAYOUTS = {
-  QWERTY:  ['qwertyuiop','asdfghjkl;',"zxcvbnm,."],
-  Colemak: ['qwfpgjluy;','arstdhneio',"zxcvbkm,."],
-  Dvorak:  ["',.pyfgcrl",'.aoeuidhtns',";qjkxbmwvz"],
+  QWERTY:   ['qwertyuiop','asdfghjkl;',"zxcvbnm,."],
+  Colemak:  ['qwfpgjluy;','arstdhneio',"zxcvbkm,."],
+  Dvorak:   ["',.pyfgcrl",'.aoeuidhtns',";qjkxbmwvz"],
+  Graphite: ['bldwzjfoup','nrstgyheia',"qxmcvkp,."],
 };
 
 const FINGER_MAP_ROW = [
@@ -110,7 +186,7 @@ const FINGER_COLORS = [
   [155, 77, 106],  // R pinky - maroon
 ];
 
-const TEXT = "the quick brown fox jumps over the lazy dog and types with vigor across every key on the board";
+const TEXT = "the quick brown fox jumps over the lazy dog and types with vigor across every key on the board then pauses and starts again";
 
 let currentLayout = 'QWERTY';
 let charIndex = 0;
@@ -121,13 +197,15 @@ let altCount = 0;
 let lastFinger = -1;
 let lastHand = -1;
 let activeKeys = new Set();
+let looping = false;
 
 const svg = document.getElementById('keyboard');
 const typingLine = document.getElementById('typingLine');
 const fCanvas = document.getElementById('fingerCanvas');
 const fCtx = fCanvas.getContext('2d');
+const loopIndicator = document.getElementById('loopIndicator');
 
-// ---- Spring physics for smooth anticipatory motion ----
+// ---- Smooth interpolation for finger movement ----
 const TRAIL_LEN = 12;
 const fingers = [];
 for (let i = 0; i < 8; i++) {
@@ -139,7 +217,7 @@ for (let i = 0; i < 8; i++) {
     trail: [],
     returning: false,
     returnTimer: 0,
-    anticipateX: 0, anticipateY: 0, // where it's drifting toward next
+    anticipateX: 0, anticipateY: 0,
     anticipating: false,
   });
 }
@@ -201,21 +279,17 @@ function findKey(ch) {
   return null;
 }
 
-// Look ahead further — scan multiple characters to find the NEXT key for each finger
 function findNextKeyForFinger(fingerIdx, startFrom) {
   for (let i = startFrom; i < TEXT.length; i++) {
     const ch = TEXT[i];
     if (ch === ' ') continue;
     const pos = findKey(ch);
     if (!pos) continue;
-    if (FINGER_MAP_ROW[pos.r][pos.c] === fingerIdx) {
-      return pos;
-    }
+    if (FINGER_MAP_ROW[pos.r][pos.c] === fingerIdx) return pos;
   }
   return null;
 }
 
-// Pre-scan: for every finger, find its next 2 upcoming keys
 function updateAnticipation() {
   for (let f = 0; f < 8; f++) {
     const nextKey = findNextKeyForFinger(f, charIndex);
@@ -234,9 +308,27 @@ let typeDelay = 0;
 
 function typeNextChar() {
   if (charIndex >= TEXT.length) {
-    charIndex = 0;
-    travel = 0; sfbCount = 0; keyCount = 0; altCount = 0;
-    lastFinger = -1; lastHand = -1;
+    // Show loop indicator, pause, then restart
+    looping = true;
+    loopIndicator.classList.add('visible');
+    setTimeout(() => {
+      charIndex = 0;
+      travel = 0; sfbCount = 0; keyCount = 0; altCount = 0;
+      lastFinger = -1; lastHand = -1;
+      looping = false;
+      loopIndicator.classList.remove('visible');
+      // Reset stats display
+      document.getElementById('travel').textContent = '0.0 px';
+      document.getElementById('sfb').textContent = '0';
+      document.getElementById('sfb').className = 'stat-value';
+      document.getElementById('keysTyped').textContent = '0';
+      document.getElementById('alternation').textContent = '\u2014';
+      document.getElementById('speedFill').style.width = '0%';
+      nextCharTime = performance.now() + 400;
+      updateAnticipation();
+    }, 1500);
+    nextCharTime = performance.now() + 99999; // pause typing
+    return;
   }
 
   const ch = TEXT[charIndex];
@@ -276,11 +368,11 @@ function typeNextChar() {
   lastFinger = finger;
   lastHand = hand;
 
-  // Snap target to the key being pressed
+  // Set new target for this finger
   f.targetX = newX;
   f.targetY = newY;
   f.returning = false;
-  f.returnTimer = performance.now() + 160;
+  f.returnTimer = performance.now() + 200;
 
   // Highlight key
   activeKeys.forEach(id => {
@@ -295,7 +387,7 @@ function typeNextChar() {
   setTimeout(() => {
     if (keyEl) keyEl.classList.remove('active');
     activeKeys.delete(keyId);
-  }, 160);
+  }, 200);
 
   // Update stats
   document.getElementById('travel').textContent = travel.toFixed(1) + ' px';
@@ -303,8 +395,8 @@ function typeNextChar() {
   sfbEl.textContent = sfbCount;
   sfbEl.className = 'stat-value' + (sfbCount > 5 ? ' bad' : sfbCount > 2 ? ' warn' : '');
   document.getElementById('keysTyped').textContent = keyCount;
-  const altPct = keyCount > 1 ? ((altCount / (keyCount - 1)) * 100).toFixed(0) : '—';
-  document.getElementById('alternation').textContent = altPct === '—' ? '—' : altPct + '%';
+  const altPct = keyCount > 1 ? ((altCount / (keyCount - 1)) * 100).toFixed(0) : '\u2014';
+  document.getElementById('alternation').textContent = altPct === '\u2014' ? '\u2014' : altPct + '%';
   document.getElementById('speedFill').style.width = Math.min(100, (keyCount / TEXT.length) * 100) + '%';
 
   typeDelay = 80 + Math.random() * 35;
@@ -312,16 +404,17 @@ function typeNextChar() {
   updateAnticipation();
 }
 
-// ---- Spring-based animation with anticipation & motion blur ----
+// ---- Smooth interpolation with critically-damped spring ----
 function animate(now) {
-  if (now >= nextCharTime) {
+  if (!looping && now >= nextCharTime) {
     typeNextChar();
   }
 
-  // Spring physics constants
-  const SPRING_K = 0.18;   // spring stiffness (snappy)
-  const DAMPING = 0.72;    // velocity damping
-  const ANTICIPATE_K = 0.02; // gentle drift toward anticipated key
+  // Critically-damped spring: smoother than underdamped, no oscillation
+  // x'' = -k*(x - target) - 2*sqrt(k)*x'
+  const SPRING_K = 0.12;    // lower = smoother, slower response
+  const DAMPING = 0.82;     // higher = less oscillation
+  const ANTICIPATE_STRENGTH = 0.04; // gentle drift toward next key
 
   for (let i = 0; i < 8; i++) {
     const f = fingers[i];
@@ -332,44 +425,31 @@ function animate(now) {
     let effTargetX = f.targetX;
     let effTargetY = f.targetY;
 
-    // If returning and finger is close to target, start drifting toward anticipated next key
-    if (f.returning && f.anticipating) {
-      const distToTarget = Math.sqrt((f.x - f.targetX)**2 + (f.y - f.targetY)**2);
-      if (distToTarget < 8) {
-        // Blend between home/return position and anticipated position
-        const blend = 0.3; // gentle lean toward next key
-        effTargetX = f.targetX + (f.anticipateX - f.targetX) * blend;
-        effTargetY = f.targetY + (f.anticipateY - f.targetY) * blend;
-      }
-    }
-
-    // When finger is idle and anticipating, lean gently toward the next key
-    if (!f.returning && f.returnTimer === 0 && f.anticipating) {
-      const distToHome = Math.sqrt((f.x - f.homeX)**2 + (f.y - f.homeY)**2);
-      if (distToHome < 3) {
-        // Gentle anticipatory drift
-        f.vx += (f.anticipateX - f.x) * ANTICIPATE_K;
-        f.vy += (f.anticipateY - f.y) * ANTICIPATE_K;
-      }
-    }
-
     // Check if finger should start returning
     if (!f.returning && f.returnTimer > 0 && now > f.returnTimer) {
       f.returning = true;
       const nextKey = findNextKeyForFinger(i, charIndex);
       if (nextKey) {
-        // Return toward a point between home and the anticipated next key
+        // Return toward a point between home and anticipated next key
         const nkx = keyCX(nextKey.r, nextKey.c);
         const nky = fingerY(nextKey.r);
-        f.targetX = f.homeX + (nkx - f.homeX) * 0.4;
-        f.targetY = f.homeY + (nky - f.homeY) * 0.4;
+        f.targetX = f.homeX + (nkx - f.homeX) * 0.5;
+        f.targetY = f.homeY + (nky - f.homeY) * 0.5;
       } else {
         f.targetX = f.homeX;
         f.targetY = f.homeY;
       }
     }
 
-    // Spring force toward target
+    // When finger is near its target and anticipating the next key, lean toward it
+    const distToTarget = Math.sqrt((f.x - f.targetX)**2 + (f.y - f.targetY)**2);
+    if (f.anticipating && distToTarget < 15) {
+      const blend = ANTICIPATE_STRENGTH * (1 - distToTarget / 15);
+      effTargetX = f.targetX + (f.anticipateX - f.targetX) * blend;
+      effTargetY = f.targetY + (f.anticipateY - f.targetY) * blend;
+    }
+
+    // Spring force toward effective target
     const ax = (effTargetX - f.x) * SPRING_K;
     const ay = (effTargetY - f.y) * SPRING_K;
 
@@ -395,16 +475,15 @@ function animate(now) {
     const col = FINGER_COLORS[i];
 
     // Motion blur trail — stretched ellipses along the motion direction
-    if (speed > 0.8 && f.trail.length > 2) {
+    if (speed > 0.5 && f.trail.length > 2) {
       for (let t = 0; t < f.trail.length - 1; t++) {
         const progress = t / (f.trail.length - 1);
-        const alpha = progress * 0.35 * Math.min(speed / 6, 1);
+        const alpha = progress * 0.3 * Math.min(speed / 5, 1);
         const trailPt = f.trail[t];
-        const radius = (3 + speed * 0.4) * progress;
+        const radius = (2.5 + speed * 0.35) * progress;
 
-        // Elliptical blur: stretch in direction of motion
         const angle = Math.atan2(f.vy, f.vx);
-        const stretchFactor = 1 + Math.min(speed * 0.3, 3);
+        const stretchFactor = 1 + Math.min(speed * 0.25, 2.5);
 
         fCtx.save();
         fCtx.translate(trailPt.x * sx, trailPt.y * sy);
@@ -419,17 +498,17 @@ function animate(now) {
     }
 
     // Directional blur smear behind the dot
-    if (speed > 2) {
-      const blurLen = Math.min(speed * 3, 30);
+    if (speed > 1.5) {
+      const blurLen = Math.min(speed * 2.5, 25);
       const nx = -f.vx / speed;
       const ny = -f.vy / speed;
-      const steps = 8;
+      const steps = 6;
       for (let b = 1; b <= steps; b++) {
         const t = b / steps;
         const bx = f.x + nx * blurLen * t;
         const by = f.y + ny * blurLen * t;
-        const balpha = 0.4 * (1 - t) * Math.min(speed / 8, 1);
-        const bradius = (6 - t * 3);
+        const balpha = 0.35 * (1 - t) * Math.min(speed / 6, 1);
+        const bradius = (5 - t * 2.5);
         fCtx.beginPath();
         fCtx.arc(bx * sx, by * sy, bradius * sx, 0, Math.PI * 2);
         fCtx.fillStyle = `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${balpha})`;
@@ -438,7 +517,7 @@ function animate(now) {
     }
 
     // Main dot with glow
-    const dotRadius = 5 + Math.min(speed * 0.2, 2.5);
+    const dotRadius = 5 + Math.min(speed * 0.15, 2);
 
     // Outer glow
     const glowRadius = dotRadius * 2.5;
@@ -482,11 +561,155 @@ function renderLayoutButtons() {
       lastFinger = -1; lastHand = -1;
       renderKeyboard();
       renderLayoutButtons();
+      updateAnticipation();
     };
     container.appendChild(btn);
   }
 }
 
+// ---- Layout Analytics (merged from sferrakl) ----
+const ANALYTICS_LAYOUTS = ['QWERTY', 'Colemak', 'Dvorak', 'Graphite'];
+const LAYOUT_COLORS = {
+  QWERTY:   '#7FBBB3',
+  Colemak:  '#A7C080',
+  Dvorak:   '#DBBC7F',
+  Graphite: '#9B4D6A',
+};
+
+const METRICS = [
+  { name: 'SFB Rate', unit: '%', lower_better: true,
+    data: { QWERTY: 6.5, Colemak: 1.7, Dvorak: 2.6, Graphite: 1.1 }, max: 8 },
+  { name: 'Travel Distance', unit: 'u', lower_better: true,
+    data: { QWERTY: 3.2, Colemak: 1.8, Dvorak: 2.1, Graphite: 1.6 }, max: 4 },
+  { name: 'Hand Alternation', unit: '%', lower_better: false,
+    data: { QWERTY: 44, Colemak: 46, Dvorak: 67, Graphite: 48 }, max: 80 },
+  { name: 'Same-Hand Runs', unit: '/k', lower_better: true,
+    data: { QWERTY: 142, Colemak: 118, Dvorak: 62, Graphite: 108 }, max: 160 },
+  { name: 'Overall Score', unit: '', lower_better: false,
+    data: { QWERTY: 38, Colemak: 72, Dvorak: 65, Graphite: 78 }, max: 100 },
+];
+
+const FINGER_WORKLOAD = {
+  QWERTY:   [8, 7, 12, 18, 20, 14, 8, 13],
+  Colemak:  [8, 9, 11, 16, 17, 13, 10, 16],
+  Dvorak:   [10, 8, 14, 14, 16, 15, 10, 13],
+  Graphite: [9, 10, 12, 15, 15, 14, 11, 14],
+};
+
+function barColor(layout, metric) {
+  const val = metric.data[layout];
+  const ratio = val / metric.max;
+  if (metric.lower_better) {
+    if (ratio < 0.3) return '#A7C080';
+    if (ratio < 0.6) return '#DBBC7F';
+    return '#E67E80';
+  } else {
+    if (ratio > 0.7) return '#A7C080';
+    if (ratio > 0.4) return '#DBBC7F';
+    return '#E67E80';
+  }
+}
+
+function renderAnalytics() {
+  const container = document.getElementById('analyticsCharts');
+  container.innerHTML = '';
+
+  for (const metric of METRICS) {
+    const section = document.createElement('div');
+    section.className = 'chart-section';
+
+    const title = document.createElement('div');
+    title.className = 'chart-title';
+    title.textContent = metric.name + (metric.unit ? ` (${metric.unit})` : '');
+    section.appendChild(title);
+
+    const sorted = [...ANALYTICS_LAYOUTS].sort((a, b) => {
+      const va = metric.data[a], vb = metric.data[b];
+      return metric.lower_better ? va - vb : vb - va;
+    });
+
+    for (const layout of sorted) {
+      const row = document.createElement('div');
+      row.className = 'chart-row';
+
+      const label = document.createElement('div');
+      label.className = 'chart-label';
+      label.textContent = layout;
+      row.appendChild(label);
+
+      const bg = document.createElement('div');
+      bg.className = 'chart-bar-bg';
+
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.background = barColor(layout, metric);
+      const pct = (metric.data[layout] / metric.max) * 100;
+      bar.dataset.width = pct + '%';
+
+      const val = document.createElement('div');
+      val.className = 'chart-value';
+      val.textContent = metric.data[layout] + (metric.unit ? ' ' + metric.unit : '');
+
+      bg.appendChild(bar);
+      bg.appendChild(val);
+      row.appendChild(bg);
+      section.appendChild(row);
+    }
+
+    container.appendChild(section);
+  }
+
+  // Animate bars in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.chart-bar').forEach(bar => {
+        bar.style.width = bar.dataset.width;
+      });
+    });
+  });
+
+  // Heatmaps
+  const hmContainer = document.getElementById('analyticsHeatmaps');
+  hmContainer.innerHTML = '';
+
+  for (const layout of ANALYTICS_LAYOUTS) {
+    const card = document.createElement('div');
+    card.className = 'heatmap-card';
+
+    const title = document.createElement('div');
+    title.className = 'heatmap-card-title';
+    title.textContent = layout;
+    card.appendChild(title);
+
+    const fingersRow = document.createElement('div');
+    fingersRow.className = 'fingers-row';
+
+    const workload = FINGER_WORKLOAD[layout];
+    for (let j = 0; j < 8; j++) {
+      if (j === 4) {
+        const div = document.createElement('div');
+        div.className = 'divider';
+        fingersRow.appendChild(div);
+      }
+      const cell = document.createElement('div');
+      cell.className = 'finger-cell';
+      const w = workload[j];
+      let bg;
+      if (w > 18) bg = 'rgba(230,126,128,0.6)';
+      else if (w > 15) bg = 'rgba(167,192,128,0.75)';
+      else if (w > 10) bg = 'rgba(167,192,128,0.4)';
+      else bg = 'rgba(167,192,128,0.15)';
+      cell.style.background = bg;
+      cell.textContent = w + '%';
+      fingersRow.appendChild(cell);
+    }
+
+    card.appendChild(fingersRow);
+    hmContainer.appendChild(card);
+  }
+}
+
+// ---- Init ----
 renderKeyboard();
 renderLayoutButtons();
 updateAnticipation();

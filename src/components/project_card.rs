@@ -60,26 +60,17 @@ pub fn ProjectCard(project: Project) -> impl IntoView {
 
             <span class="project-card__stack">{project.stack}</span>
 
-            <div class="project-card__links">
-                {project
-                    .url
-                    .map(|url| {
-                        view! {
+            {project
+                .url
+                .map(|url| {
+                    view! {
+                        <div class="project-card__links">
                             <a href=url class="project-card__link" target="_blank" rel="noopener noreferrer">
                                 "Live"
                             </a>
-                        }
-                    })}
-                {project
-                    .source
-                    .map(|src| {
-                        view! {
-                            <a href=src class="project-card__link" target="_blank" rel="noopener noreferrer">
-                                "Source"
-                            </a>
-                        }
-                    })}
-            </div>
+                        </div>
+                    }
+                })}
 
             {if has_demos {
                 let demo_tabs = demos.clone();

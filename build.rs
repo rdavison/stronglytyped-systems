@@ -261,6 +261,16 @@ fn render_markdown(content: &str, ss: &SyntaxSet, theme: &syntect::highlighting:
             Event::End(TagEnd::Link) => {
                 html_output.push_str("</a>");
             }
+            Event::Start(Tag::Image { dest_url, title, .. }) => {
+                html_output.push_str(&format!(
+                    "<figure><img src=\"{}\" alt=\"{}\" class=\"blog-post__image\" loading=\"lazy\" />",
+                    dest_url,
+                    html_escape(&title)
+                ));
+            }
+            Event::End(TagEnd::Image) => {
+                html_output.push_str("</figure>");
+            }
             Event::Start(Tag::BlockQuote(_)) => {
                 html_output.push_str("<blockquote>");
             }

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coself Portal — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a10;
+    --surface: #12121a;
+    --border: #232332;
+    --text: #d7d7e1;
+    --text-muted: #828296;
+    --text-dim: #46465a;
+    --accent: #5a8cff;
+    --accent-secondary: #966eff;
+    --healthy: #46be6e;
+    --warning: #dcaa32;
+    --error: #dc4646;
+    --conf-high: #50be8c;
+    --conf-mid: #c8aa46;
+    --conf-low: #c85a46;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .portal {
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Title Bar ── */
+  .title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .title-bar h1 {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: 4px;
+  }
+  .breathing-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--healthy);
+    margin-left: 12px;
+    animation: breathe 4s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  .clock {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    color: var(--text-dim);
+  }
+
+  /* ── Stats Line ── */
+  .stats-line {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .separator {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 16px;
+  }
+
+  /* ── Two Column Layout ── */
+  .columns {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    overflow: hidden;
+  }
+  .col-left { flex: 0.55; overflow-y: auto; }
+  .col-right { flex: 0.45; overflow-y: auto; }
+
+  .section-header {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ── Engine Cards ── */
+  .engine-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .engine-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: default;
+    transition: border-color 0.2s;
+  }
+  .engine-card:hover {
+    border-color: var(--accent);
+  }
+  .engine-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot.healthy { background: var(--healthy); }
+  .status-dot.error { background: var(--error); }
+  .engine-desc {
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* ── Belief Rows ── */
+  .belief-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    cursor: default;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .belief-row:hover {
+    background: rgba(90, 140, 255, 0.05);
+  }
+  .belief-row:hover .belief-text {
+    color: var(--text);
+  }
+  .belief-conf {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    min-width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+    line-height: 1.8;
+  }
+  .belief-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .belief-bar {
+    height: 2.5px;
+    border-radius: 1px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .belief-bar-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--surface);
+    border-radius: 1px;
+  }
+  .belief-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 1px;
+  }
+  .belief-text {
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s;
+  }
+
+  /* ── Task List ── */
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(35, 35, 50, 0.5);
+  }
+  .task-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    min-width: 72px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .task-status.in-progress {
+    background: rgba(220, 170, 50, 0.15);
+    color: var(--warning);
+  }
+  .task-status.not-started {
+    background: rgba(70, 70, 90, 0.15);
+    color: var(--text-dim);
+  }
+  .task-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: 1;
+  }
+  .task-owner {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* ── Brain Activity ── */
+  .activity-item {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    padding: 3px 0;
+    border-left: 2px solid transparent;
+    padding-left: 8px;
+  }
+  .activity-item.brain-start { border-color: var(--accent); }
+  .activity-item.engine { border-color: var(--accent-secondary); }
+  .activity-item.tool { border-color: var(--warning); }
+  .activity-item.complete { border-color: var(--healthy); }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .status-bar .connected {
+    color: var(--healthy);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="portal">
+  <div class="title-bar">
+    <h1>COSELF <span class="breathing-dot"></span></h1>
+    <span class="clock" id="clock">14:32</span>
+  </div>
+
+  <div class="stats-line">
+    47 beliefs (78% avg) &nbsp;&nbsp; 6 tasks open &nbsp;&nbsp; 2 in progress &nbsp;&nbsp; 34 sessions &nbsp;&nbsp; 4 sprints done &nbsp;&nbsp; 12 audits today
+  </div>
+
+  <div class="separator"></div>
+
+  <div class="columns">
+    <!-- LEFT COLUMN: Engines + Beliefs -->
+    <div class="col-left">
+      <div class="section-header">ENGINES</div>
+      <div class="engine-grid">
+        <div class="engine-card">
+          <div class="engine-name"><span class="status-dot healthy"></span> Prolog</div>
+          <div class="engine-desc">Deductive reasoning — facts &amp; rules</div>
+        </div>
+        <div class="engine-card">
+          <div class="engine-name"><span class="status-dot healthy"></span> Lean 4</div>
+          <div class="engine-desc">Formal theorem prover</div>
+        </div>
+        <div class="engine-card">
+          <div class="engine-name"><span class="status-dot healthy"></span> Futhark</div>
+          <div class="engine-desc">GPU-parallel computation</div>
+        </div>
+        <div class="engine-card">
+          <div class="engine-name"><span class="status-dot healthy"></span> MiniZinc</div>
+          <div class="engine-desc">Constraint optimization</div>
+        </div>
+      </div>
+
+      <div class="section-header">BELIEFS (47)</div>
+      <div id="beliefs"></div>
+    </div>
+
+    <!-- RIGHT COLUMN: Tasks + Activity -->
+    <div class="col-right">
+      <div class="section-header">TASKS</div>
+      <div id="tasks"></div>
+
+      <div style="margin-top: 20px;">
+        <div class="section-header">BRAIN ACTIVITY</div>
+        <div id="activity"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span>Dashboard &nbsp;|&nbsp; <span class="connected">Brain connected</span> &nbsp;|&nbsp; 47 beliefs &nbsp;|&nbsp; 6 tasks</span>
+    <span>uptime 4h 23m</span>
+  </div>
+</div>
+
+<script>
+// Fake beliefs data
+const beliefs = [
+  { text: "Building systems is more fulfilling than consuming content", conf: 0.95 },
+  { text: "Type-driven development catches more bugs than testing alone", conf: 0.92 },
+  { text: "The interface between intention and output is the core obsession", conf: 0.90 },
+  { text: "Formal verification adds real value to production systems", conf: 0.88 },
+  { text: "AI agent architecture needs persistent memory to be useful", conf: 0.87 },
+  { text: "OCaml and Rust share the right ideas about type systems", conf: 0.85 },
+  { text: "Keyboard layout affects cognitive load during programming", conf: 0.82 },
+  { text: "Event-driven runtimes are more composable than request-response", conf: 0.80 },
+  { text: "Music composition and programming share structural patterns", conf: 0.78 },
+  { text: "DSLs are the morphisms between layers of abstraction", conf: 0.75 },
+  { text: "Bayesian reasoning improves decision-making under uncertainty", conf: 0.72 },
+  { text: "Parse-don't-validate is the correct architectural boundary", conf: 0.70 },
+  { text: "Intelligence is built upon language through all layers", conf: 0.68 },
+  { text: "Constraint solvers outperform hand-tuned heuristics for scheduling", conf: 0.65 },
+];
+
+function confColor(c) {
+  if (c >= 0.8) return 'var(--conf-high)';
+  if (c >= 0.6) return 'var(--conf-mid)';
+  return 'var(--conf-low)';
+}
+
+const beliefsEl = document.getElementById('beliefs');
+beliefs.forEach(b => {
+  const color = confColor(b.conf);
+  beliefsEl.innerHTML += `
+    <div class="belief-row">
+      <span class="belief-conf" style="color: ${color}">${Math.round(b.conf * 100)}%</span>
+      <div class="belief-content">
+        <div class="belief-bar">
+          <div class="belief-bar-bg"></div>
+          <div class="belief-bar-fill" style="width: ${b.conf * 100}%; background: ${color}"></div>
+        </div>
+        <div class="belief-text">${b.text}</div>
+      </div>
+    </div>`;
+});
+
+// Fake tasks
+const tasks = [
+  { title: "Deploy event runtime to production", status: "in-progress", owner: "Shared" },
+  { title: "Wire WhatsApp gateway through runtime dispatcher", status: "in-progress", owner: "Coself" },
+  { title: "Add property-based tests for belief propagation", status: "not-started", owner: "Shared" },
+  { title: "Implement canvas scene streaming over WebSocket", status: "not-started", owner: "Coself" },
+  { title: "Profile and optimize Futhark kernel launch latency", status: "not-started", owner: "Coself" },
+  { title: "Write Lean 4 proofs for new action dependency chains", status: "not-started", owner: "Shared" },
+];
+
+const tasksEl = document.getElementById('tasks');
+tasks.forEach(t => {
+  const statusClass = t.status === 'in-progress' ? 'in-progress' : 'not-started';
+  const statusLabel = t.status === 'in-progress' ? 'IN PROGRESS' : 'NOT STARTED';
+  tasksEl.innerHTML += `
+    <div class="task-row">
+      <span class="task-status ${statusClass}">${statusLabel}</span>
+      <span class="task-title">${t.title}</span>
+      <span class="task-owner">${t.owner}</span>
+    </div>`;
+});
+
+// Fake brain activity
+const activity = [
+  { text: "14:31 brain.invoke via Discord — conversation-fallback", type: "brain-start" },
+  { text: "14:31 Prolog: 3 critical patterns, fear_of_rejection blocks marriage", type: "engine" },
+  { text: "14:31 Lean 4: 5 theorems verified, 0 failures", type: "engine" },
+  { text: "14:31 Futhark: belief propagation converged in 12 iterations", type: "engine" },
+  { text: "14:31 MiniZinc: optimal schedule — address pattern #2 first", type: "engine" },
+  { text: "14:31 Tool: Read CONTEXT.md, BELIEFS.md", type: "tool" },
+  { text: "14:31 Tool: Edit BELIEFS.md (2 beliefs updated)", type: "tool" },
+  { text: "14:31 Brain complete — 4.2s, 1847 tokens", type: "complete" },
+  { text: "14:28 brain.invoke via WhatsApp — conversation-fallback", type: "brain-start" },
+  { text: "14:28 Brain complete — 3.1s, 923 tokens", type: "complete" },
+  { text: "14:15 brain.invoke via Portal — reflect", type: "brain-start" },
+  { text: "14:15 Brain complete — 5.8s, 2104 tokens", type: "complete" },
+];
+
+const activityEl = document.getElementById('activity');
+activity.forEach(a => {
+  activityEl.innerHTML += `<div class="activity-item ${a.type}">${a.text}</div>`;
+});
+
+// Live clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>

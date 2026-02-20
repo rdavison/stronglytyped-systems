@@ -10,6 +10,7 @@ pub struct Project {
     pub tags: &'static [&'static str],
     pub url: Option<&'static str>,
     pub source: Option<&'static str>,
+    pub demos: &'static [(&'static str, &'static str)],
 }
 
 fn get_projects() -> Vec<Project> {
@@ -20,13 +21,27 @@ fn get_projects() -> Vec<Project> {
             tags: &["Rust", "AI", "Axum", "Tokio", "Lean 4"],
             url: None,
             source: Some("https://github.com/rdavison/coself"),
+            demos: &[],
         },
         Project {
             name: "Coself Portal",
-            description: "Native macOS application that renders live agent state as a spatial field — beliefs, conversation topology, and internal reasoning visualized on a GPU-rendered canvas. The visual cortex of the Coself system.",
-            tags: &["Swift", "SwiftUI", "Metal", "macOS"],
+            description: "Native macOS application that renders live agent state as a spatial field \u{2014} beliefs, conversation topology, and internal reasoning visualized on a GPU-rendered canvas. 11 rendering modes including a force-directed belief particle system, trip planner with animated route arcs, and a conversational interface powered by the Coself brain.",
+            tags: &["Rust", "egui", "SwiftUI", "WebSocket"],
             url: None,
             source: None,
+            demos: &[
+                ("Dashboard", "/demos/dashboard.html"),
+                ("Conversation", "/demos/conversation.html"),
+                ("Trip Planner", "/demos/trip.html"),
+            ],
+        },
+        Project {
+            name: "qwerkey",
+            description: "Keyboard typing visualizer and effort analyzer. Watch animated fingers move across the keyboard at 50fps while it tracks travel distance, same-finger bigrams, scissors, rolls, and ergonomic cost. Supports 6 layouts including a custom-designed one optimized for alternation. Dark/light themes, command palette, and real-time stats overlay.",
+            tags: &["OCaml", "Bonsai", "js_of_ocaml", "SVG"],
+            url: None,
+            source: Some("https://github.com/rdavison/qwerkey"),
+            demos: &[],
         },
         Project {
             name: "sferrakl",
@@ -34,6 +49,7 @@ fn get_projects() -> Vec<Project> {
             tags: &["Rust", "Leptos", "WASM", "SSR"],
             url: None,
             source: None,
+            demos: &[],
         },
         Project {
             name: "Rektangle",
@@ -41,13 +57,15 @@ fn get_projects() -> Vec<Project> {
             tags: &["Swift", "macOS", "CoreGraphics", "CVDisplayLink"],
             url: None,
             source: Some("https://github.com/rdavison/Rectangle"),
+            demos: &[],
         },
         Project {
             name: "cubesim",
-            description: "Interactive 3D Rubik's cube simulator built with Bevy. Oblique projection rendering, planar reflection mirrors for hidden faces, scramble generation, and smooth rotation animation.",
+            description: "Interactive 3D Rubik\u{2019}s cube simulator built with Bevy. Oblique projection rendering, planar reflection mirrors for hidden faces, scramble generation, and smooth rotation animation.",
             tags: &["Rust", "Bevy", "3D", "Game Engine"],
             url: None,
             source: Some("https://github.com/rdavison/cubesim"),
+            demos: &[],
         },
         Project {
             name: "stronglytyped.systems",
@@ -55,6 +73,7 @@ fn get_projects() -> Vec<Project> {
             tags: &["Rust", "Leptos", "SSR", "WASM"],
             url: Some("https://stronglytyped.systems"),
             source: None,
+            demos: &[],
         },
     ]
 }

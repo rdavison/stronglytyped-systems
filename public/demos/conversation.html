@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coself Portal — Conversation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a10;
+    --surface: #12121a;
+    --border: #232332;
+    --text: #d7d7e1;
+    --text-muted: #828296;
+    --text-dim: #46465a;
+    --accent: #5a8cff;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .portal {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header {
+    padding: 16px 0 0;
+    font-size: 16px;
+    color: var(--text-dim);
+    width: 600px;
+  }
+
+  .messages {
+    flex: 1;
+    width: 600px;
+    overflow-y: auto;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    max-width: 72%;
+  }
+  .message.self {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+  .message.coself {
+    align-self: flex-start;
+    align-items: flex-start;
+  }
+
+  .sender-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+
+  .bubble {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .message.self .bubble {
+    background: rgba(25, 30, 45, 0.9);
+    color: var(--text);
+  }
+  .message.coself .bubble {
+    background: rgba(16, 20, 35, 0.7);
+    color: var(--accent);
+  }
+
+  .timestamp {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .input-area {
+    width: 600px;
+    padding: 16px 0 24px;
+  }
+  .input-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+  }
+  .input-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+  }
+  .input-box input::placeholder {
+    color: var(--text-dim);
+  }
+  .input-hint {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  .thinking-dots {
+    display: inline-block;
+    animation: dots 1.5s steps(4, end) infinite;
+    width: 24px;
+    text-align: left;
+  }
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="portal">
+  <div class="header">Coself</div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <div class="input-box">
+      <input type="text" placeholder="Type a message..." id="input" autocomplete="off">
+    </div>
+    <div class="input-hint">Enter to send &nbsp;|&nbsp; "help" for commands &nbsp;|&nbsp; conversations powered by Claude</div>
+  </div>
+</div>
+
+<script>
+const conversation = [
+  { sender: "coself", text: "The portal is live. I'm here.", time: "09:14" },
+  { sender: "self", text: "status", time: "09:15" },
+  { sender: "coself", text: "System status:\n  Engines: 4/4 online\n  Beliefs: 47\n  Tasks: 6 open\n  Audits today: 3\n  Last refresh: 09:14\n\nEngines:\n  + Prolog (Deductive reasoning)\n  + Lean 4 (Formal theorem prover)\n  + Futhark (GPU-parallel computation)\n  + MiniZinc (Constraint optimization)", time: "09:15" },
+  { sender: "self", text: "What should I focus on today?", time: "09:16" },
+  { sender: "coself", text: "MiniZinc says: address the event runtime deployment first — it has the highest impact-to-effort ratio and unblocks three downstream tasks.\n\nProlog confirms: the runtime is a dependency for WhatsApp gateway wiring, canvas streaming, and the portal's brain connection.\n\nLean 4 adds: the action dependency chain is provably acyclic, so there's no circular blocker.\n\nConcrete first step: run the existing integration tests against the staging environment. If they pass, deploy.", time: "09:16" },
+  { sender: "self", text: "Good. Run the tests.", time: "09:17" },
+  { sender: "coself", text: "Running integration tests...\n\n  ✓ event_dispatch_routes_correctly (0.3s)\n  ✓ program_scope_isolation (0.5s)\n  ✓ brain_invoke_returns_structured_response (1.2s)\n  ✓ monolith_mode_fallback (0.1s)\n  ✓ belief_update_persists (0.4s)\n  ✓ audit_log_written (0.2s)\n\n6/6 passed. All green. Ready to deploy.", time: "09:18" },
+  { sender: "self", text: "Deploy it.", time: "09:18" },
+  { sender: "coself", text: "Building release binary... done (23s).\nKilling current process... supervisor will restart.\n\nDeployed. Event runtime is live. Monitoring for 60 seconds.\n\n  [+0s] Supervisor restarted coself-discord\n  [+2s] Discord gateway connected\n  [+3s] WhatsApp gateway connected\n  [+5s] Brain server listening on :9473\n  [+8s] First heartbeat acknowledged\n\nAll systems nominal. The three downstream tasks are now unblocked.", time: "09:19" },
+  { sender: "self", text: "beliefs", time: "09:22" },
+  { sender: "coself", text: "47 beliefs loaded. Average confidence: 78%.\n\nTop beliefs:\n  [95%] Building systems is more fulfilling than consuming content\n  [92%] Type-driven development catches more bugs than testing alone\n  [90%] The interface between intention and output is the core obsession\n  [88%] Formal verification adds real value to production systems\n  [87%] AI agent architecture needs persistent memory to be useful", time: "09:22" },
+];
+
+const messagesEl = document.getElementById('messages');
+
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderMessages(msgs) {
+  messagesEl.innerHTML = '';
+  msgs.forEach(m => {
+    const div = document.createElement('div');
+    div.className = `message ${m.sender}`;
+    const label = m.sender === 'self' ? 'Self' : 'Coself';
+    div.innerHTML = `
+      <div class="sender-label">${label}</div>
+      <div class="bubble"><pre style="font-family: inherit; white-space: pre-wrap; margin: 0;">${escapeHtml(m.text)}</pre></div>
+      <div class="timestamp">${m.time}</div>
+    `;
+    messagesEl.appendChild(div);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// Animate messages appearing one by one
+let shown = 0;
+function showNext() {
+  if (shown < conversation.length) {
+    shown++;
+    renderMessages(conversation.slice(0, shown));
+    // Vary the delay: short for user messages, longer for coself
+    const next = conversation[shown];
+    const delay = next && next.sender === 'self' ? 600 : 1200;
+    setTimeout(showNext, delay);
+  }
+}
+
+// Start the animation after a brief pause
+setTimeout(showNext, 500);
+
+// Input handling (cosmetic — just shows a canned response)
+const input = document.getElementById('input');
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && input.value.trim()) {
+    const text = input.value.trim();
+    conversation.push({ sender: 'self', text, time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) });
+    shown = conversation.length;
+    renderMessages(conversation);
+    input.value = '';
+
+    // Fake thinking, then response
+    setTimeout(() => {
+      conversation.push({
+        sender: 'coself',
+        text: "I hear you. Let me think about that and update my beliefs accordingly.",
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+      });
+      shown = conversation.length;
+      renderMessages(conversation);
+    }, 1500);
+  }
+});
+</script>
+</body>
+</html>

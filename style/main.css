@@ -25,6 +25,10 @@
     --color-blue: #7FBBB3;           /* Everforest blue — night sky */
     --color-red: #E67E80;            /* Everforest red — accent only */
 
+    /* Garden architecture — warm stone and dried petals */
+    --color-maroon: #9B4D6A;         /* Dried rose petal — burgundy with cool violet */
+    --color-stucco: #C4A882;         /* Beige stucco — sun-faded Mediterranean wall */
+
     /* Evergarden soft touches — used sparingly for highlights */
     --color-cherry: #FAE6EF;         /* Evergarden cherry — barely there blush */
     --color-snow: #AFD9E6;           /* Evergarden snow — cool moonlight */
@@ -199,7 +203,7 @@ code, pre { font-family: var(--font-mono); }
 }
 
 blockquote {
-    border-left: 2px solid var(--color-rose);
+    border-left: 2px solid var(--color-maroon);
     padding-left: var(--space-lg);
     color: var(--color-text-muted);
     font-family: var(--font-display);
@@ -356,10 +360,11 @@ main {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 4px;
-    color: var(--color-text-dim);
+    color: var(--color-stucco);
     margin-bottom: var(--space-lg);
     font-weight: 400;
     text-align: center;
+    opacity: 0.6;
 }
 
 /* ====================================================================
@@ -435,9 +440,10 @@ main {
 .timeline__date {
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
-    color: var(--color-text-dim);
+    color: var(--color-stucco);
     min-width: 6rem;
     flex-shrink: 0;
+    opacity: 0.7;
 }
 
 .timeline__content {
@@ -685,6 +691,69 @@ main {
 
 .project-card__link:hover { color: var(--color-text); }
 
+/* Demo iframe embedded in project cards */
+.project-card__demo {
+    margin-top: var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    background: #0a0a10;
+}
+
+.project-card__demo iframe {
+    width: 100%;
+    height: 420px;
+    border: none;
+    display: block;
+}
+
+.project-card__demo-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: var(--space-xs) var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-maroon);
+    background: rgba(10, 10, 16, 0.85);
+    border-radius: 0 var(--radius-md) 0 var(--radius-sm);
+    z-index: 1;
+}
+
+/* Demo tabs for projects with multiple views */
+.project-card__demo-tabs {
+    display: flex;
+    gap: 0;
+    background: rgba(10, 10, 16, 0.9);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.project-card__demo-tab {
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--color-text-dim);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+    border-bottom: 1px solid transparent;
+    margin-bottom: -1px;
+}
+
+.project-card__demo-tab:hover {
+    color: var(--color-text-muted);
+}
+
+.project-card__demo-tab--active {
+    color: var(--color-stucco);
+    border-bottom-color: var(--color-stucco);
+}
+
 /* Tag badge — Everforest green, very quiet */
 .tag-badge {
     display: inline-block;
@@ -903,6 +972,13 @@ main {
     font-style: italic;
 }
 
+/* Alternate skill group heading colors — garden variety */
+.about__skill-group:nth-child(2) h3 { color: var(--color-stucco); }
+.about__skill-group:nth-child(3) h3 { color: var(--color-blue); }
+.about__skill-group:nth-child(4) h3 { color: var(--color-maroon); }
+.about__skill-group:nth-child(5) h3 { color: var(--color-aqua); }
+.about__skill-group:nth-child(6) h3 { color: var(--color-gold); }
+
 .about__skill-group ul { list-style: none; }
 
 .about__skill-group li {
@@ -1003,7 +1079,7 @@ main {
 .hire-me__service h3 {
     font-family: var(--font-display);
     font-size: var(--font-size-xl);
-    color: var(--color-green);
+    color: var(--color-maroon);
     margin-bottom: var(--space-sm);
     font-weight: 400;
     font-style: italic;
@@ -1063,10 +1139,11 @@ main {
 .footer__copy {
     font-family: var(--font-display);
     font-size: var(--font-size-base);
-    color: var(--color-text-dim);
+    color: var(--color-stucco);
     margin-bottom: var(--space-xs);
     font-style: italic;
     font-weight: 300;
+    opacity: 0.5;
 }
 
 .footer__built {

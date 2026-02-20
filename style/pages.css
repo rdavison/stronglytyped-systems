@@ -1,0 +1,130 @@
+/* About */
+.about__bio {
+    max-width: var(--max-width-narrow);
+    margin-bottom: var(--space-xl);
+    font-size: var(--font-size-lg);
+    line-height: 1.8;
+}
+
+.about__skills h2 {
+    margin-bottom: var(--space-lg);
+}
+
+.about__skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--space-lg);
+}
+
+.about__skill-group h3 {
+    font-size: var(--font-size-base);
+    color: var(--color-cyan);
+    margin-bottom: var(--space-sm);
+    font-family: var(--font-mono);
+}
+
+.about__skill-group ul {
+    list-style: none;
+}
+
+.about__skill-group li {
+    color: var(--color-text-muted);
+    padding: var(--space-xs) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.about__skill-group li:last-child {
+    border-bottom: none;
+}
+
+/* Contact */
+.contact {
+    max-width: var(--max-width-narrow);
+    margin: 0 auto;
+}
+
+.contact__links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.contact__link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.contact__link:hover {
+    border-color: var(--color-magenta);
+    box-shadow: var(--glow-sm) var(--color-magenta);
+    color: var(--color-text);
+}
+
+.contact__link-label {
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+}
+
+.contact__link-value {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+}
+
+/* Hire Me */
+.hire-me {
+    max-width: var(--max-width-narrow);
+    margin: 0 auto;
+}
+
+.hire-me__services h2 {
+    margin-bottom: var(--space-lg);
+}
+
+.hire-me__service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.hire-me__service {
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+}
+
+.hire-me__service h3 {
+    font-size: var(--font-size-lg);
+    color: var(--color-purple);
+    margin-bottom: var(--space-sm);
+}
+
+.hire-me__service p {
+    color: var(--color-text-muted);
+    line-height: 1.7;
+}
+
+.hire-me__availability h2 {
+    margin-bottom: var(--space-md);
+}
+
+.hire-me__availability a {
+    color: var(--color-purple);
+}
+
+/* Projects */
+.projects__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-lg);
+}

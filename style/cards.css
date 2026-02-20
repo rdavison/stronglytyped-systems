@@ -1,0 +1,101 @@
+/* Post cards */
+.post-card {
+    display: block;
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.post-card:hover {
+    border-color: var(--color-magenta);
+    box-shadow: var(--glow-sm) var(--color-magenta);
+    color: var(--color-text);
+}
+
+.post-card__title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-xs);
+}
+
+.post-card__date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: var(--space-sm);
+}
+
+.post-card__description {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.post-card__tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+/* Project cards */
+.project-card {
+    padding: var(--space-lg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.project-card:hover {
+    border-color: var(--color-purple);
+    box-shadow: var(--glow-sm) var(--color-purple);
+}
+
+.project-card__name {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-sm);
+}
+
+.project-card__description {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+}
+
+.project-card__tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-md);
+}
+
+.project-card__links {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.project-card__link {
+    font-size: var(--font-size-sm);
+    color: var(--color-purple);
+    font-weight: 600;
+    transition: text-shadow var(--transition-fast);
+}
+
+.project-card__link:hover {
+    text-shadow: var(--glow-sm) var(--color-purple);
+}
+
+/* Tag badge */
+.tag-badge {
+    display: inline-block;
+    padding: 0.15em 0.5em;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    color: var(--color-cyan);
+    border: 1px solid var(--color-cyan);
+    border-radius: 3px;
+    opacity: 0.7;
+}

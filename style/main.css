@@ -315,34 +315,17 @@ main {
     letter-spacing: 2px;
 }
 
-/* Thesis — the quiet journal entry. Whispers, doesn't shout. */
-.hero__thesis {
+/* Tagline — one sentence, the distilled thesis */
+.hero__tagline {
     max-width: var(--max-width-prose);
-    margin-bottom: 0;
-    animation: fade-in-up 1s ease 0.2s both;
-}
-
-.hero__thesis p {
     font-family: var(--font-display);
     font-size: var(--font-size-xl);
-    line-height: 1.9;
+    line-height: 1.8;
     color: var(--color-text-muted);
     font-weight: 300;
-}
-
-.hero__thesis p + p {
-    margin-top: var(--space-lg);
-}
-
-.hero__link {
-    color: var(--color-gold);
-    border-bottom: 1px solid rgba(219, 188, 127, 0.3);
-    transition: border-color var(--transition-base), color var(--transition-base);
-}
-
-.hero__link:hover {
-    border-color: var(--color-gold);
-    color: var(--color-gold);
+    font-style: italic;
+    margin-bottom: 0;
+    animation: fade-in-up 1s ease 0.2s both;
 }
 
 /* Separator — a breath between sections. The margin IS the section gap. */
@@ -466,78 +449,60 @@ main {
 }
 
 /* ====================================================================
-   DOMAIN CARDS — balanced 2x2 grid, equal weight, soft glass
-   Feng shui: equal columns = calm. Asymmetry in content, not layout.
+   PROOF LINES — one-line claims that link to projects.
+   Replaces the domain grid with signal-dense proof statements.
    ==================================================================== */
-.hero__domains {
+.hero__proof-lines {
     width: 100%;
     max-width: var(--max-width);
     margin-bottom: var(--section-gap);
     animation: fade-in-up 1s ease 0.6s both;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-.domains-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.proof-line {
+    display: flex;
     gap: var(--space-lg);
-}
-
-.domain-card {
-    padding: var(--space-lg) var(--space-xl);
-    border: 1px solid var(--color-border);
-    background: rgba(39, 46, 51, 0.4);
-    border-radius: var(--radius-md);
-    transition: border-color var(--transition-base), background var(--transition-base), transform var(--transition-base);
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid rgba(167, 192, 128, 0.04);
+    transition: background var(--transition-base), border-color var(--transition-base);
     text-align: left;
-    position: relative;
-    overflow: hidden;
+    align-items: baseline;
 }
 
-/* Subtle top-border accent — each card has its own color from the palette */
-.domain-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    opacity: 0;
-    transition: opacity var(--transition-base);
+.proof-line:last-child { border-bottom: none; }
+
+.proof-line:hover {
+    background: rgba(39, 46, 51, 0.3);
 }
 
-.domain-card:nth-child(1)::before { background: var(--color-gold); }
-.domain-card:nth-child(2)::before { background: var(--color-green); }
-.domain-card:nth-child(3)::before { background: var(--color-blue); }
-.domain-card:nth-child(4)::before { background: var(--color-aqua); }
-
-.domain-card:hover {
-    border-color: var(--color-border-hover);
-    background: rgba(39, 46, 51, 0.65);
-    transform: translateY(-2px);
+.proof-line__domain {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-stucco);
+    min-width: 5rem;
+    flex-shrink: 0;
+    opacity: 0.7;
 }
 
-.domain-card:hover::before {
-    opacity: 0.6;
-}
-
-.domain-card__title {
+.proof-line__claim {
     font-family: var(--font-display);
     font-size: var(--font-size-lg);
-    margin-bottom: var(--space-sm);
-    font-weight: 500;
-    font-style: italic;
-}
-
-.domain-card:nth-child(1) .domain-card__title { color: var(--color-gold); }
-.domain-card:nth-child(2) .domain-card__title { color: var(--color-green); }
-.domain-card:nth-child(3) .domain-card__title { color: var(--color-blue); }
-.domain-card:nth-child(4) .domain-card__title { color: var(--color-aqua); }
-
-.domain-card__body {
-    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
-    line-height: 1.8;
+    font-weight: 300;
+    line-height: 1.6;
 }
+
+.proof-line:nth-child(1) .proof-line__domain { color: var(--color-gold); }
+.proof-line:nth-child(2) .proof-line__domain { color: var(--color-green); }
+.proof-line:nth-child(3) .proof-line__domain { color: var(--color-blue); }
+.proof-line:nth-child(4) .proof-line__domain { color: var(--color-aqua); }
+
+.proof-line:hover .proof-line__claim { color: var(--color-text); }
 
 /* CTA — small, centered, quiet invitation */
 .hero__cta {
@@ -690,6 +655,27 @@ main {
 }
 
 .project-card__link:hover { color: var(--color-text); }
+
+/* Technical highlight — the one sentence that signals engineering depth */
+.project-card__highlight {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-gold);
+    line-height: 1.7;
+    margin-bottom: var(--space-md);
+    padding-left: var(--space-md);
+    border-left: 2px solid rgba(219, 188, 127, 0.25);
+}
+
+/* Stack line — clean monospace, replaces tag badges */
+.project-card__stack {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-dim);
+    margin-bottom: var(--space-md);
+    letter-spacing: 0.3px;
+}
 
 /* Screenshot preview with "Try Demo" badge */
 .project-card__preview {
@@ -992,7 +978,7 @@ main {
 .blog-post__not-found a { color: var(--color-green); }
 
 /* ====================================================================
-   ABOUT — bio reads like a letter, skills like a quiet inventory
+   ABOUT — person first, then depth, then stack
    ==================================================================== */
 .about__bio {
     max-width: var(--max-width-prose);
@@ -1005,64 +991,70 @@ main {
     text-align: left;
 }
 
+.about__lead {
+    color: var(--color-text) !important;
+    font-size: var(--font-size-2xl) !important;
+    line-height: 1.6 !important;
+    font-weight: 300;
+    margin-bottom: var(--space-lg) !important;
+}
+
 .about__bio p { animation: fade-in-up 0.8s ease both; }
 .about__bio p:nth-child(2) { animation-delay: 0.15s; }
 .about__bio p:nth-child(3) { animation-delay: 0.3s; }
 
-.about__skills { margin-bottom: var(--section-gap); }
-.about__human { margin-bottom: var(--section-gap); }
+/* Depth stories — prose paragraphs, not grids */
+.about__depths { margin-bottom: var(--section-gap); }
 
-.about__skills h2,
-.about__human h2 {
+.about__depths h2 {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+}
+
+.depth-story {
+    margin-bottom: var(--space-xl);
+    max-width: var(--max-width-prose);
+}
+
+.depth-story h3 {
+    font-family: var(--font-display);
+    font-size: var(--font-size-lg);
+    color: var(--color-gold);
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: var(--space-sm);
+}
+
+.depth-story:nth-child(3) h3 { color: var(--color-green); }
+.depth-story:nth-child(4) h3 { color: var(--color-blue); }
+
+.depth-story p {
+    color: var(--color-text-muted);
+    line-height: 1.9;
+    font-size: var(--font-size-base);
+}
+
+/* Stack — clean monospace lines */
+.about__stack { margin-bottom: var(--section-gap); }
+
+.about__stack h2 {
     text-align: center;
     margin-bottom: var(--space-lg);
 }
 
-.about__skill-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-lg);
-}
-
-.about__skill-group {
-    padding: var(--space-lg);
-    border: 1px solid var(--color-border);
-    background: rgba(39, 46, 51, 0.35);
-    border-radius: var(--radius-md);
-    transition: border-color var(--transition-base), transform var(--transition-base);
-}
-
-.about__skill-group:hover {
-    border-color: var(--color-border-hover);
-    transform: translateY(-2px);
-}
-
-.about__skill-group h3 {
-    font-size: var(--font-size-base);
-    color: var(--color-green);
-    margin-bottom: var(--space-sm);
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-style: italic;
-}
-
-/* Alternate skill group heading colors — garden variety */
-.about__skill-group:nth-child(2) h3 { color: var(--color-stucco); }
-.about__skill-group:nth-child(3) h3 { color: var(--color-blue); }
-.about__skill-group:nth-child(4) h3 { color: var(--color-maroon); }
-.about__skill-group:nth-child(5) h3 { color: var(--color-aqua); }
-.about__skill-group:nth-child(6) h3 { color: var(--color-gold); }
-
-.about__skill-group ul { list-style: none; }
-
-.about__skill-group li {
-    color: var(--color-text-muted);
-    padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(167, 192, 128, 0.04);
+.about__stack-line {
+    font-family: var(--font-mono);
     font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+    letter-spacing: 0.3px;
+    line-height: 2;
 }
 
-.about__skill-group li:last-child { border-bottom: none; }
+.about__stack-line--secondary {
+    color: var(--color-text-dim);
+    font-size: 0.8rem;
+}
 
 .about__education {
     text-align: center;
@@ -1177,21 +1169,27 @@ main {
 }
 
 /* ====================================================================
-   PROJECTS GRID — featured + 2-col grid
+   PROJECTS — two-tier hierarchy: flagship + explorations
    ==================================================================== */
+.projects__flagship {
+    margin-bottom: var(--section-gap);
+}
+
+.projects__section-heading {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--color-stucco);
+    margin-bottom: var(--space-lg);
+    font-weight: 400;
+    opacity: 0.6;
+}
+
 .projects__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-lg);
-}
-
-.projects__grid .project-card:first-child {
-    grid-column: 1 / -1;
-}
-
-/* Last project (if odd count, not first) gets full width too for balance */
-.projects__grid .project-card:last-child:nth-child(even):not(:first-child) {
-    grid-column: 1 / -1;
 }
 
 /* ====================================================================
@@ -1254,17 +1252,15 @@ main {
         font-size: var(--font-size-2xl);
     }
 
-    .domains-grid {
-        grid-template-columns: 1fr;
+    .proof-line {
+        flex-direction: column;
+        gap: var(--space-xs);
     }
+
+    .proof-line__domain { min-width: auto; }
 
     .projects__grid {
         grid-template-columns: 1fr;
-    }
-
-    .projects__grid .project-card:first-child,
-    .projects__grid .project-card:last-child:nth-child(even):not(:first-child) {
-        grid-column: 1;
     }
 
     .timeline__entry {
@@ -1273,10 +1269,6 @@ main {
     }
 
     .timeline__date { min-width: auto; }
-
-    .about__skill-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 
     .contact__link {
         flex-direction: column;
@@ -1297,7 +1289,7 @@ main {
 
     .btn { text-align: center; }
 
-    .about__skill-grid {
-        grid-template-columns: 1fr;
+    .about__lead {
+        font-size: var(--font-size-xl) !important;
     }
 }

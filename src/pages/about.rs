@@ -9,10 +9,10 @@ pub fn AboutPage() -> impl IntoView {
             <h1 class="page-title">"About"</h1>
 
             <section class="about__bio">
-                <p>
-                    "I'm Richard — a software engineer in NYC with 11+ years of experience shipping "
-                    "production systems across adtech, genomics, cloud infrastructure, and AI. "
-                    "I think in type systems and composition laws. I see structure where others see features."
+                <p class="about__lead">
+                    "I play bassoon at an orchestral level, speak six languages at varying degrees of fluency, "
+                    "and solve Rubik\u{2019}s cubes competitively. I believe intelligence is built upon language "
+                    "through all layers \u{2014} it\u{2019}s languages all the way down."
                 </p>
                 <p>
                     "My through-line is the interface between human intention and physical output. "
@@ -20,108 +20,62 @@ pub fn AboutPage() -> impl IntoView {
                     "music and composition, and programming languages. Three domains, one obsession."
                 </p>
                 <p>
-                    "I play bassoon at an orchestral level, speak six languages at varying degrees of fluency, "
-                    "and solve Rubik's cubes competitively. I believe intelligence is built upon language "
-                    "through all layers — it's languages all the way down."
+                    "11+ years shipping production systems across adtech, genomics, cloud infrastructure, and AI. "
+                    "I think in type systems and composition laws. I see structure where others see features."
                 </p>
             </section>
 
-            <section class="about__skills">
-                <h2>"Technical Skills"</h2>
-                <div class="about__skill-grid">
-                    <div class="about__skill-group">
-                        <h3>"Languages"</h3>
-                        <ul>
-                            <li>"Rust"</li>
-                            <li>"Python"</li>
-                            <li>"TypeScript"</li>
-                            <li>"Go"</li>
-                            <li>"OCaml"</li>
-                            <li>"Swift"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"AI / LLM"</h3>
-                        <ul>
-                            <li>"Agent architecture"</li>
-                            <li>"LLM orchestration"</li>
-                            <li>"Prompt engineering"</li>
-                            <li>"Claude API"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"Infrastructure"</h3>
-                        <ul>
-                            <li>"AWS (VPC, EC2, IAM, S3)"</li>
-                            <li>"Kubernetes / Docker"</li>
-                            <li>"Terraform / Ansible"</li>
-                            <li>"CI/CD Pipelines"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"Formal Methods"</h3>
-                        <ul>
-                            <li>"Lean 4"</li>
-                            <li>"Prolog"</li>
-                            <li>"MiniZinc"</li>
-                            <li>"Futhark"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"Data"</h3>
-                        <ul>
-                            <li>"Postgres / MySQL"</li>
-                            <li>"InfluxDB / Redshift"</li>
-                            <li>"Airflow / RabbitMQ"</li>
-                            <li>"Snowflake"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"Frontend"</h3>
-                        <ul>
-                            <li>"Leptos / WASM"</li>
-                            <li>"React / ReScript"</li>
-                            <li>"SwiftUI"</li>
-                            <li>"Tailwind CSS"</li>
-                        </ul>
-                    </div>
+            <section class="about__depths">
+                <h2>"Where I Go Deep"</h2>
+
+                <div class="depth-story">
+                    <h3>"Formal verification in production"</h3>
+                    <p>
+                        "I use Lean 4 not as a resume line but as a reasoning engine \u{2014} "
+                        "Coself proves behavioral invariants about its own agent architecture before execution. "
+                        "Alongside Prolog for deductive queries, MiniZinc for constraint optimization, "
+                        "and Futhark for GPU-parallel computation, the system makes decisions that are "
+                        "formally verified, not just tested."
+                    </p>
+                </div>
+
+                <div class="depth-story">
+                    <h3>"Type-driven systems in Rust and OCaml"</h3>
+                    <p>
+                        "Seven years of OCaml at Solvuu taught me to lean on the type system as a design tool, "
+                        "not just a safety net. Parse-don\u{2019}t-validate, exhaustive matching, newtype wrappers \u{2014} "
+                        "if the compiler can\u{2019}t prove a property, I write a test. If it can, I don\u{2019}t. "
+                        "I brought this discipline into Rust when I built Coself\u{2019}s event runtime."
+                    </p>
+                </div>
+
+                <div class="depth-story">
+                    <h3>"Human input systems"</h3>
+                    <p>
+                        "Keyboards fascinate me because they\u{2019}re the tightest loop between thought and output. "
+                        "I\u{2019}ve built effort models that score same-finger bigrams, scissors, lateral stretches, "
+                        "and hand alternation across six layouts. I designed a custom layout optimized for alternation. "
+                        "The same obsession extends to music (bassoon technique is a physical interface problem) "
+                        "and IPA phonetics (how do mouths produce language?)."
+                    </p>
                 </div>
             </section>
 
-            <section class="about__human">
-                <h2>"Human Skills"</h2>
-                <div class="about__skill-grid">
-                    <div class="about__skill-group">
-                        <h3>"Music"</h3>
-                        <ul>
-                            <li>"Bassoon (orchestral)"</li>
-                            <li>"Composition"</li>
-                            <li>"Music theory"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"Languages"</h3>
-                        <ul>
-                            <li>"English (native)"</li>
-                            <li>"Spanish (fluent)"</li>
-                            <li>"Italian, Portuguese"</li>
-                            <li>"Latin, Mandarin"</li>
-                        </ul>
-                    </div>
-                    <div class="about__skill-group">
-                        <h3>"Other"</h3>
-                        <ul>
-                            <li>"Speedcubing"</li>
-                            <li>"Keyboard layout design"</li>
-                            <li>"Category theory"</li>
-                        </ul>
-                    </div>
-                </div>
+            <section class="about__stack">
+                <h2>"Stack"</h2>
+                <p class="about__stack-line">
+                    "Rust \u{b7} OCaml \u{b7} Go \u{b7} Python \u{b7} Swift \u{b7} TypeScript \u{b7} "
+                    "Lean 4 \u{b7} Prolog \u{b7} Futhark \u{b7} MiniZinc"
+                </p>
+                <p class="about__stack-line about__stack-line--secondary">
+                    "Axum \u{b7} Tokio \u{b7} Leptos \u{b7} Bevy \u{b7} egui \u{b7} SwiftUI \u{b7} "
+                    "AWS \u{b7} Kubernetes \u{b7} Terraform \u{b7} Docker"
+                </p>
             </section>
 
             <section class="about__education">
                 <h2>"Education"</h2>
-                <p>"B.S. in Computer Science — Stetson University, 2011"</p>
+                <p>"B.S. in Computer Science \u{2014} Stetson University, 2011"</p>
             </section>
         </div>
     }

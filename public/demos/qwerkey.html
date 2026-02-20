@@ -10,20 +10,20 @@
   body { background: #0a0a10; color: #D3C6AA; font-family: 'Inter', sans-serif; overflow: hidden; }
 
   .container { display: flex; height: 100vh; }
-  .keyboard-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  .keyboard-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
   .sidebar { width: 200px; padding: 20px; border-left: 1px solid rgba(167,192,128,0.1); display: flex; flex-direction: column; gap: 16px; }
 
   .typing-line { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #7A8478; margin-bottom: 16px; height: 20px; text-align: center; width: 100%; }
   .typing-line .typed { color: #A7C080; }
   .typing-line .cursor { color: #D3C6AA; border-bottom: 2px solid #D3C6AA; }
 
-  svg.keyboard { width: 560px; height: 200px; }
+  .kb-container { position: relative; width: 560px; height: 200px; }
+  svg.keyboard { width: 560px; height: 200px; position: absolute; top: 0; left: 0; }
+  canvas.finger-canvas { width: 560px; height: 200px; position: absolute; top: 0; left: 0; pointer-events: none; }
+
   .key { fill: #12121a; stroke: rgba(167,192,128,0.12); stroke-width: 1; rx: 4; transition: fill 0.08s; }
   .key.active { fill: #2a3520; stroke: #A7C080; stroke-width: 1.5; }
   .key-label { fill: #7A8478; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
-  .key.active + .key-label, .key.active ~ .key-label { fill: #D3C6AA; }
-
-  .finger { fill: rgba(155, 77, 106, 0.8); transition: cx 0.06s ease-out, cy 0.06s ease-out; }
 
   .sidebar h3 { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #7A8478; }
   .stat { display: flex; flex-direction: column; gap: 2px; }
@@ -45,7 +45,10 @@
 <div class="container">
   <div class="keyboard-area">
     <div class="typing-line" id="typingLine"></div>
-    <svg class="keyboard" id="keyboard" viewBox="0 0 560 200"></svg>
+    <div class="kb-container">
+      <svg class="keyboard" id="keyboard" viewBox="0 0 560 200"></svg>
+      <canvas class="finger-canvas" id="fingerCanvas" width="1120" height="400"></canvas>
+    </div>
   </div>
   <div class="sidebar">
     <h3>Layout</h3>
@@ -81,7 +84,6 @@ const LAYOUTS = {
   Dvorak:  ["',.pyfgcrl",'.aoeuidhtns',";qjkxbmwvz"],
 };
 
-// finger assignment: 0-3 left pinky→index, 4-7 right index→pinky
 const FINGER_MAP_ROW = [
   [0,1,2,3,3,4,4,5,6,7],
   [0,1,2,3,3,4,4,5,6,7],
@@ -96,6 +98,18 @@ const FINGER_HOME = {
   4:{r:1,c:6}, 5:{r:1,c:7}, 6:{r:1,c:8}, 7:{r:1,c:9}
 };
 
+// Finger colors (left hand = cool tones, right hand = warm tones)
+const FINGER_COLORS = [
+  [127, 187, 179], // L pinky - teal
+  [131, 192, 146], // L ring - aqua
+  [167, 192, 128], // L middle - green
+  [219, 188, 127], // L index - gold
+  [219, 188, 127], // R index - gold
+  [196, 168, 130], // R middle - stucco
+  [214, 153, 182], // R ring - rose
+  [155, 77, 106],  // R pinky - maroon
+];
+
 const TEXT = "the quick brown fox jumps over the lazy dog and types with vigor across every key on the board";
 
 let currentLayout = 'QWERTY';
@@ -106,16 +120,35 @@ let keyCount = 0;
 let altCount = 0;
 let lastFinger = -1;
 let lastHand = -1;
-let lastFingerPos = {};
 let activeKeys = new Set();
 
 const svg = document.getElementById('keyboard');
 const typingLine = document.getElementById('typingLine');
+const fCanvas = document.getElementById('fingerCanvas');
+const fCtx = fCanvas.getContext('2d');
+
+// ---- Spring physics for smooth anticipatory motion ----
+const TRAIL_LEN = 12;
+const fingers = [];
+for (let i = 0; i < 8; i++) {
+  fingers.push({
+    x: 0, y: 0,
+    targetX: 0, targetY: 0,
+    homeX: 0, homeY: 0,
+    vx: 0, vy: 0,
+    trail: [],
+    returning: false,
+    returnTimer: 0,
+    anticipateX: 0, anticipateY: 0, // where it's drifting toward next
+    anticipating: false,
+  });
+}
 
 function keyX(row, col) { return ROW_OFFSETS[row] + col * (KEY_W + KEY_GAP); }
 function keyY(row) { return ROW_Y[row]; }
 function keyCX(row, col) { return keyX(row, col) + KEY_W / 2; }
 function keyCY(row) { return keyY(row) + KEY_H / 2; }
+function fingerY(row) { return keyCY(row) + KEY_H / 2 + 8; }
 
 function renderKeyboard() {
   svg.innerHTML = '';
@@ -139,17 +172,22 @@ function renderKeyboard() {
     }
   }
 
-  // finger dots
   for (let f = 0; f < 8; f++) {
     const home = FINGER_HOME[f];
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', keyCX(home.r, home.c));
-    circle.setAttribute('cy', keyCY(home.r) + KEY_H/2 + 8);
-    circle.setAttribute('r', 5);
-    circle.classList.add('finger');
-    circle.id = `finger-${f}`;
-    svg.appendChild(circle);
-    lastFingerPos[f] = { x: keyCX(home.r, home.c), y: keyCY(home.r) };
+    const hx = keyCX(home.r, home.c);
+    const hy = fingerY(home.r);
+    fingers[f].x = hx;
+    fingers[f].y = hy;
+    fingers[f].targetX = hx;
+    fingers[f].targetY = hy;
+    fingers[f].homeX = hx;
+    fingers[f].homeY = hy;
+    fingers[f].vx = 0;
+    fingers[f].vy = 0;
+    fingers[f].trail = [];
+    fingers[f].returning = false;
+    fingers[f].returnTimer = 0;
+    fingers[f].anticipating = false;
   }
 }
 
@@ -163,6 +201,37 @@ function findKey(ch) {
   return null;
 }
 
+// Look ahead further — scan multiple characters to find the NEXT key for each finger
+function findNextKeyForFinger(fingerIdx, startFrom) {
+  for (let i = startFrom; i < TEXT.length; i++) {
+    const ch = TEXT[i];
+    if (ch === ' ') continue;
+    const pos = findKey(ch);
+    if (!pos) continue;
+    if (FINGER_MAP_ROW[pos.r][pos.c] === fingerIdx) {
+      return pos;
+    }
+  }
+  return null;
+}
+
+// Pre-scan: for every finger, find its next 2 upcoming keys
+function updateAnticipation() {
+  for (let f = 0; f < 8; f++) {
+    const nextKey = findNextKeyForFinger(f, charIndex);
+    if (nextKey) {
+      fingers[f].anticipateX = keyCX(nextKey.r, nextKey.c);
+      fingers[f].anticipateY = fingerY(nextKey.r);
+      fingers[f].anticipating = true;
+    } else {
+      fingers[f].anticipating = false;
+    }
+  }
+}
+
+let nextCharTime = 0;
+let typeDelay = 0;
+
 function typeNextChar() {
   if (charIndex >= TEXT.length) {
     charIndex = 0;
@@ -173,50 +242,47 @@ function typeNextChar() {
   const ch = TEXT[charIndex];
   charIndex++;
 
-  // update typing line
   const before = TEXT.substring(Math.max(0, charIndex - 40), charIndex);
   const after = TEXT.substring(charIndex, charIndex + 30);
   typingLine.innerHTML = `<span class="typed">${before}</span><span class="cursor">${after.charAt(0) || ''}</span>${after.substring(1)}`;
 
   if (ch === ' ') {
-    setTimeout(typeNextChar, 120);
+    typeDelay = 100;
+    nextCharTime = performance.now() + typeDelay;
+    updateAnticipation();
     return;
   }
 
   const pos = findKey(ch);
-  if (!pos) { setTimeout(typeNextChar, 80); return; }
+  if (!pos) { typeDelay = 80; nextCharTime = performance.now() + typeDelay; updateAnticipation(); return; }
 
   const finger = FINGER_MAP_ROW[pos.r][pos.c];
   const hand = finger < 4 ? 0 : 1;
+  const f = fingers[finger];
 
-  // travel
+  // Travel
   const newX = keyCX(pos.r, pos.c);
-  const newY = keyCY(pos.r);
-  if (lastFingerPos[finger]) {
-    const dx = newX - lastFingerPos[finger].x;
-    const dy = newY - lastFingerPos[finger].y;
-    travel += Math.sqrt(dx*dx + dy*dy);
-  }
-  lastFingerPos[finger] = { x: newX, y: newY };
+  const newY = fingerY(pos.r);
+  const dx = newX - f.x;
+  const dy = newY - f.y;
+  travel += Math.sqrt(dx*dx + dy*dy);
 
   // SFB
   if (lastFinger === finger && lastFinger >= 0) sfbCount++;
 
-  // alternation
+  // Alternation
   keyCount++;
   if (lastHand >= 0 && hand !== lastHand) altCount++;
-
   lastFinger = finger;
   lastHand = hand;
 
-  // animate finger
-  const dot = document.getElementById(`finger-${finger}`);
-  if (dot) {
-    dot.setAttribute('cx', newX);
-    dot.setAttribute('cy', keyCY(pos.r) + KEY_H/2 + 8);
-  }
+  // Snap target to the key being pressed
+  f.targetX = newX;
+  f.targetY = newY;
+  f.returning = false;
+  f.returnTimer = performance.now() + 160;
 
-  // highlight key
+  // Highlight key
   activeKeys.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
@@ -226,7 +292,12 @@ function typeNextChar() {
   const keyEl = document.getElementById(keyId);
   if (keyEl) { keyEl.classList.add('active'); activeKeys.add(keyId); }
 
-  // update stats
+  setTimeout(() => {
+    if (keyEl) keyEl.classList.remove('active');
+    activeKeys.delete(keyId);
+  }, 160);
+
+  // Update stats
   document.getElementById('travel').textContent = travel.toFixed(1) + ' px';
   const sfbEl = document.getElementById('sfb');
   sfbEl.textContent = sfbCount;
@@ -236,18 +307,166 @@ function typeNextChar() {
   document.getElementById('alternation').textContent = altPct === '—' ? '—' : altPct + '%';
   document.getElementById('speedFill').style.width = Math.min(100, (keyCount / TEXT.length) * 100) + '%';
 
-  // return finger home after delay
-  setTimeout(() => {
-    const home = FINGER_HOME[finger];
-    if (dot) {
-      dot.setAttribute('cx', keyCX(home.r, home.c));
-      dot.setAttribute('cy', keyCY(home.r) + KEY_H/2 + 8);
-    }
-    if (keyEl) keyEl.classList.remove('active');
-    activeKeys.delete(keyId);
-  }, 200);
+  typeDelay = 80 + Math.random() * 35;
+  nextCharTime = performance.now() + typeDelay;
+  updateAnticipation();
+}
 
-  setTimeout(typeNextChar, 90 + Math.random() * 40);
+// ---- Spring-based animation with anticipation & motion blur ----
+function animate(now) {
+  if (now >= nextCharTime) {
+    typeNextChar();
+  }
+
+  // Spring physics constants
+  const SPRING_K = 0.18;   // spring stiffness (snappy)
+  const DAMPING = 0.72;    // velocity damping
+  const ANTICIPATE_K = 0.02; // gentle drift toward anticipated key
+
+  for (let i = 0; i < 8; i++) {
+    const f = fingers[i];
+    const prevX = f.x;
+    const prevY = f.y;
+
+    // Determine effective target
+    let effTargetX = f.targetX;
+    let effTargetY = f.targetY;
+
+    // If returning and finger is close to target, start drifting toward anticipated next key
+    if (f.returning && f.anticipating) {
+      const distToTarget = Math.sqrt((f.x - f.targetX)**2 + (f.y - f.targetY)**2);
+      if (distToTarget < 8) {
+        // Blend between home/return position and anticipated position
+        const blend = 0.3; // gentle lean toward next key
+        effTargetX = f.targetX + (f.anticipateX - f.targetX) * blend;
+        effTargetY = f.targetY + (f.anticipateY - f.targetY) * blend;
+      }
+    }
+
+    // When finger is idle and anticipating, lean gently toward the next key
+    if (!f.returning && f.returnTimer === 0 && f.anticipating) {
+      const distToHome = Math.sqrt((f.x - f.homeX)**2 + (f.y - f.homeY)**2);
+      if (distToHome < 3) {
+        // Gentle anticipatory drift
+        f.vx += (f.anticipateX - f.x) * ANTICIPATE_K;
+        f.vy += (f.anticipateY - f.y) * ANTICIPATE_K;
+      }
+    }
+
+    // Check if finger should start returning
+    if (!f.returning && f.returnTimer > 0 && now > f.returnTimer) {
+      f.returning = true;
+      const nextKey = findNextKeyForFinger(i, charIndex);
+      if (nextKey) {
+        // Return toward a point between home and the anticipated next key
+        const nkx = keyCX(nextKey.r, nextKey.c);
+        const nky = fingerY(nextKey.r);
+        f.targetX = f.homeX + (nkx - f.homeX) * 0.4;
+        f.targetY = f.homeY + (nky - f.homeY) * 0.4;
+      } else {
+        f.targetX = f.homeX;
+        f.targetY = f.homeY;
+      }
+    }
+
+    // Spring force toward target
+    const ax = (effTargetX - f.x) * SPRING_K;
+    const ay = (effTargetY - f.y) * SPRING_K;
+
+    f.vx = (f.vx + ax) * DAMPING;
+    f.vy = (f.vy + ay) * DAMPING;
+
+    f.x += f.vx;
+    f.y += f.vy;
+
+    // Trail for motion blur
+    f.trail.push({ x: f.x, y: f.y, vx: f.vx, vy: f.vy });
+    if (f.trail.length > TRAIL_LEN) f.trail.shift();
+  }
+
+  // ---- Render fingers ----
+  fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+
+  const sx = 2, sy = 2; // retina scale
+
+  for (let i = 0; i < 8; i++) {
+    const f = fingers[i];
+    const speed = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
+    const col = FINGER_COLORS[i];
+
+    // Motion blur trail — stretched ellipses along the motion direction
+    if (speed > 0.8 && f.trail.length > 2) {
+      for (let t = 0; t < f.trail.length - 1; t++) {
+        const progress = t / (f.trail.length - 1);
+        const alpha = progress * 0.35 * Math.min(speed / 6, 1);
+        const trailPt = f.trail[t];
+        const radius = (3 + speed * 0.4) * progress;
+
+        // Elliptical blur: stretch in direction of motion
+        const angle = Math.atan2(f.vy, f.vx);
+        const stretchFactor = 1 + Math.min(speed * 0.3, 3);
+
+        fCtx.save();
+        fCtx.translate(trailPt.x * sx, trailPt.y * sy);
+        fCtx.rotate(angle);
+        fCtx.scale(stretchFactor, 1);
+        fCtx.beginPath();
+        fCtx.arc(0, 0, radius * sx, 0, Math.PI * 2);
+        fCtx.fillStyle = `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${alpha})`;
+        fCtx.fill();
+        fCtx.restore();
+      }
+    }
+
+    // Directional blur smear behind the dot
+    if (speed > 2) {
+      const blurLen = Math.min(speed * 3, 30);
+      const nx = -f.vx / speed;
+      const ny = -f.vy / speed;
+      const steps = 8;
+      for (let b = 1; b <= steps; b++) {
+        const t = b / steps;
+        const bx = f.x + nx * blurLen * t;
+        const by = f.y + ny * blurLen * t;
+        const balpha = 0.4 * (1 - t) * Math.min(speed / 8, 1);
+        const bradius = (6 - t * 3);
+        fCtx.beginPath();
+        fCtx.arc(bx * sx, by * sy, bradius * sx, 0, Math.PI * 2);
+        fCtx.fillStyle = `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${balpha})`;
+        fCtx.fill();
+      }
+    }
+
+    // Main dot with glow
+    const dotRadius = 5 + Math.min(speed * 0.2, 2.5);
+
+    // Outer glow
+    const glowRadius = dotRadius * 2.5;
+    const glow = fCtx.createRadialGradient(
+      f.x * sx, f.y * sy, dotRadius * sx * 0.3,
+      f.x * sx, f.y * sy, glowRadius * sx
+    );
+    glow.addColorStop(0, `rgba(${col[0]}, ${col[1]}, ${col[2]}, 0.25)`);
+    glow.addColorStop(1, `rgba(${col[0]}, ${col[1]}, ${col[2]}, 0)`);
+    fCtx.beginPath();
+    fCtx.arc(f.x * sx, f.y * sy, glowRadius * sx, 0, Math.PI * 2);
+    fCtx.fillStyle = glow;
+    fCtx.fill();
+
+    // Core dot
+    fCtx.beginPath();
+    fCtx.arc(f.x * sx, f.y * sy, dotRadius * sx, 0, Math.PI * 2);
+    const dotGrad = fCtx.createRadialGradient(
+      f.x * sx - dotRadius * sx * 0.3, f.y * sy - dotRadius * sy * 0.3, 0,
+      f.x * sx, f.y * sy, dotRadius * sx
+    );
+    dotGrad.addColorStop(0, `rgba(${Math.min(255, col[0]+60)}, ${Math.min(255, col[1]+60)}, ${Math.min(255, col[2]+60)}, 0.95)`);
+    dotGrad.addColorStop(1, `rgba(${col[0]}, ${col[1]}, ${col[2]}, 0.85)`);
+    fCtx.fillStyle = dotGrad;
+    fCtx.fill();
+  }
+
+  requestAnimationFrame(animate);
 }
 
 function renderLayoutButtons() {
@@ -260,7 +479,7 @@ function renderLayoutButtons() {
     btn.onclick = () => {
       currentLayout = name;
       charIndex = 0; travel = 0; sfbCount = 0; keyCount = 0; altCount = 0;
-      lastFinger = -1; lastHand = -1; lastFingerPos = {};
+      lastFinger = -1; lastHand = -1;
       renderKeyboard();
       renderLayoutButtons();
     };
@@ -270,7 +489,9 @@ function renderLayoutButtons() {
 
 renderKeyboard();
 renderLayoutButtons();
-setTimeout(typeNextChar, 800);
+updateAnticipation();
+nextCharTime = performance.now() + 800;
+requestAnimationFrame(animate);
 </script>
 </body>
 </html>

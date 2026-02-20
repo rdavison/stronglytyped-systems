@@ -1,6 +1,5 @@
 use leptos::prelude::*;
 
-use crate::components::tag_badge::TagBadge;
 use crate::pages::projects::Project;
 
 #[component]
@@ -8,6 +7,7 @@ pub fn ProjectCard(project: Project) -> impl IntoView {
     let has_demos = !project.demos.is_empty();
     let demos: Vec<(&'static str, &'static str)> = project.demos.to_vec();
     let screenshot = project.screenshot;
+    let highlight = project.highlight;
 
     let (demo_open, set_demo_open) = signal(false);
     let (active_demo, set_active_demo) = signal(0_usize);
@@ -51,15 +51,15 @@ pub fn ProjectCard(project: Project) -> impl IntoView {
 
             <h3 class="project-card__name">{project.name}</h3>
             <p class="project-card__description">{project.description}</p>
-            <div class="project-card__tags">
-                {project
-                    .tags
-                    .iter()
-                    .map(|tag| {
-                        view! { <TagBadge tag=tag.to_string() /> }
-                    })
-                    .collect::<Vec<_>>()}
-            </div>
+
+            {highlight.map(|h| {
+                view! {
+                    <p class="project-card__highlight">{h}</p>
+                }
+            })}
+
+            <span class="project-card__stack">{project.stack}</span>
+
             <div class="project-card__links">
                 {project
                     .url

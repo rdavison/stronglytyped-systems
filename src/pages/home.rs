@@ -12,20 +12,9 @@ pub fn HomePage() -> impl IntoView {
                 <p class="hero__location">"New York, NY"</p>
             </div>
 
-            <div class="hero__thesis">
-                <p>
-                    "I build systems at the intersection of AI agent architecture, formal verification, "
-                    "and human-computer interaction. My obsession is the interface between human intention "
-                    "and physical output — whether that\u{2019}s keyboards, music, or programming languages."
-                </p>
-                <p>
-                    "Currently on a deliberate sabbatical, building "
-                    <a href="/projects" class="hero__link">"Coself"</a>
-                    " — an AI system that combines probabilistic reasoning "
-                    "with formal verification, maintains persistent memory, "
-                    "and serves a single brain across multiple transport layers."
-                </p>
-            </div>
+            <p class="hero__tagline">
+                "The interface between human intention and physical output — keyboards, music, programming languages."
+            </p>
 
             <div class="hero__separator" aria-hidden="true"></div>
 
@@ -65,38 +54,23 @@ pub fn HomePage() -> impl IntoView {
 
             <div class="hero__separator" aria-hidden="true"></div>
 
-            <div class="hero__domains">
-                <h2 class="section-heading">"What I Work On"</h2>
-                <div class="domains-grid">
-                    <div class="domain-card">
-                        <h3 class="domain-card__title">"AI Agent Systems"</h3>
-                        <p class="domain-card__body">
-                            "Multi-gateway LLM orchestration, event-driven runtimes with typed dispatch, "
-                            "persistent memory substrates, scoped program execution."
-                        </p>
-                    </div>
-                    <div class="domain-card">
-                        <h3 class="domain-card__title">"Systems Programming"</h3>
-                        <p class="domain-card__body">
-                            "Rust, OCaml, Go. Type-driven design, parse-don\u{2019}t-validate, exhaustive matching. "
-                            "If the compiler can\u{2019}t prove it, write a test."
-                        </p>
-                    </div>
-                    <div class="domain-card">
-                        <h3 class="domain-card__title">"Infrastructure"</h3>
-                        <p class="domain-card__body">
-                            "AWS, Kubernetes, Terraform. CI/CD pipelines, multi-region deployments, "
-                            "observability stacks."
-                        </p>
-                    </div>
-                    <div class="domain-card">
-                        <h3 class="domain-card__title">"Formal Methods"</h3>
-                        <p class="domain-card__body">
-                            "Lean 4 theorem proving, Prolog deduction, MiniZinc constraint optimization, "
-                            "Futhark GPU-parallel computation. Proofs, not promises."
-                        </p>
-                    </div>
-                </div>
+            <div class="hero__proof-lines">
+                <a href="/projects" class="proof-line">
+                    <span class="proof-line__domain">"AI Agents"</span>
+                    <span class="proof-line__claim">"One brain serving Discord, WhatsApp, and HTTP — with Lean 4 proofs verifying behavioral invariants"</span>
+                </a>
+                <a href="/projects" class="proof-line">
+                    <span class="proof-line__domain">"Systems"</span>
+                    <span class="proof-line__claim">"Event-driven runtime with typed dispatch, scoped programs, and hot-reloadable architecture in Rust"</span>
+                </a>
+                <a href="/projects" class="proof-line">
+                    <span class="proof-line__domain">"Input"</span>
+                    <span class="proof-line__claim">"Custom effort models scoring SFBs, scissors, and lateral stretches across 6 keyboard layouts at 50fps"</span>
+                </a>
+                <a href="/projects" class="proof-line">
+                    <span class="proof-line__domain">"Formal"</span>
+                    <span class="proof-line__claim">"Prolog deduction, MiniZinc constraint optimization, and Futhark GPU computation — not just types, theorems"</span>
+                </a>
             </div>
 
             <div class="hero__cta">

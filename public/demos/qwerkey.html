@@ -337,7 +337,7 @@ function typeNextChar() {
   typingLine.innerHTML = `<span class="typed">${before}</span><span class="cursor">${after.charAt(0) || ''}</span>${after.substring(1)}`;
 
   if (ch === ' ') {
-    typeDelay = 100;
+    typeDelay = 140;
     nextCharTime = performance.now() + typeDelay;
 
     return;
@@ -396,7 +396,7 @@ function typeNextChar() {
   document.getElementById('alternation').textContent = altPct === '\u2014' ? '\u2014' : altPct + '%';
   document.getElementById('speedFill').style.width = Math.min(100, (keyCount / TEXT.length) * 100) + '%';
 
-  typeDelay = 80 + Math.random() * 35;
+  typeDelay = 120 + Math.random() * 50;
   nextCharTime = performance.now() + typeDelay;
 
 }
@@ -409,15 +409,21 @@ function animate(now) {
 
   // Critically-damped spring: smoother than underdamped, no oscillation
   // x'' = -k*(x - target) - 2*sqrt(k)*x'
-  const SPRING_K = 0.045;   // lower = smoother, slower response
-  const DAMPING = 0.88;     // higher = less oscillation, more glide
+  const SPRING_K_FAR = 0.02;   // soft at distance — smooth glide
+  const SPRING_K_NEAR = 0.12;  // firm near target — tight arrival
+  const NEAR_RADIUS = 20;      // px — distance at which spring tightens
+  const DAMPING = 0.90;
 
   for (let i = 0; i < 8; i++) {
     const f = fingers[i];
 
-    // Spring force toward target
-    const ax = (f.targetX - f.x) * SPRING_K;
-    const ay = (f.targetY - f.y) * SPRING_K;
+    // Variable spring: soft far away, firm when close (tight landing)
+    const dist = Math.sqrt((f.targetX - f.x)**2 + (f.targetY - f.y)**2);
+    const nearness = Math.max(0, 1 - dist / NEAR_RADIUS); // 0 = far, 1 = on target
+    const k = SPRING_K_FAR + (SPRING_K_NEAR - SPRING_K_FAR) * nearness;
+
+    const ax = (f.targetX - f.x) * k;
+    const ay = (f.targetY - f.y) * k;
 
     f.vx = (f.vx + ax) * DAMPING;
     f.vy = (f.vy + ay) * DAMPING;

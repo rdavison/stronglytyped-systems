@@ -726,7 +726,7 @@ main {
 
 /* Demo-open state: card spans full grid width */
 .project-card--demo-open {
-    grid-column: 1 / -1;
+    /* single-column layout — no span needed */
 }
 
 /* Demo iframe embedded in project cards */
@@ -1201,7 +1201,7 @@ main {
 
 .projects__grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: var(--space-lg);
 }
 
@@ -1273,7 +1273,7 @@ main {
     .proof-line__domain { min-width: auto; }
 
     .projects__grid {
-        grid-template-columns: 1fr;
+        /* already single-column */
     }
 
     .timeline__entry {

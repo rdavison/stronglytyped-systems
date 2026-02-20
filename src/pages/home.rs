@@ -39,14 +39,14 @@ pub fn HomePage() -> impl IntoView {
                         <span class="timeline__date">"2017 – 24"</span>
                         <div class="timeline__content">
                             <span class="timeline__title">"Solvuu — Full Stack Engineer"</span>
-                            <span class="timeline__detail">"Genomics analysis platforms, OCaml full-stack, AWS infrastructure. Seven years."</span>
+                            <span class="timeline__detail">"Genomics analysis platforms. OCaml full-stack, distributed data pipelines, AWS infrastructure, CI/CD. Seven years."</span>
                         </div>
                     </div>
                     <div class="timeline__entry">
                         <span class="timeline__date">"2014 – 17"</span>
                         <div class="timeline__content">
                             <span class="timeline__title">"Sonobi — Software Engineer"</span>
-                            <span class="timeline__detail">"Real-time bidding, data pipelines, monitoring. Python, Airflow, InfluxDB."</span>
+                            <span class="timeline__detail">"Real-time bidding, data pipelines, monitoring. Spark, Python, Airflow, InfluxDB."</span>
                         </div>
                     </div>
                 </div>

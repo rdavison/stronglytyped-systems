@@ -746,6 +746,10 @@ main {
     display: block;
 }
 
+.projects__flagship .project-card__demo iframe {
+    height: 540px;
+}
+
 /* Demo header with label, tabs, and close button */
 .project-card__demo-header {
     display: flex;

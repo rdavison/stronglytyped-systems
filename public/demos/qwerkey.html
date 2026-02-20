@@ -216,9 +216,6 @@ for (let i = 0; i < 8; i++) {
     vx: 0, vy: 0,
     trail: [],
     returning: false,
-    returnTimer: 0,
-    anticipateX: 0, anticipateY: 0,
-    anticipating: false,
   });
 }
 
@@ -264,8 +261,6 @@ function renderKeyboard() {
     fingers[f].vy = 0;
     fingers[f].trail = [];
     fingers[f].returning = false;
-    fingers[f].returnTimer = 0;
-    fingers[f].anticipating = false;
   }
 }
 
@@ -290,15 +285,18 @@ function findNextKeyForFinger(fingerIdx, startFrom) {
   return null;
 }
 
-function updateAnticipation() {
-  for (let f = 0; f < 8; f++) {
-    const nextKey = findNextKeyForFinger(f, charIndex);
+function retargetAllFingers() {
+  for (let i = 0; i < 8; i++) {
+    const f = fingers[i];
+    const nextKey = findNextKeyForFinger(i, charIndex);
     if (nextKey) {
-      fingers[f].anticipateX = keyCX(nextKey.r, nextKey.c);
-      fingers[f].anticipateY = fingerY(nextKey.r);
-      fingers[f].anticipating = true;
-    } else {
-      fingers[f].anticipating = false;
+      f.targetX = keyCX(nextKey.r, nextKey.c);
+      f.targetY = fingerY(nextKey.r);
+      f.returning = false;
+    } else if (!f.returning) {
+      f.targetX = f.homeX;
+      f.targetY = f.homeY;
+      f.returning = true;
     }
   }
 }
@@ -325,7 +323,7 @@ function typeNextChar() {
       document.getElementById('alternation').textContent = '\u2014';
       document.getElementById('speedFill').style.width = '0%';
       nextCharTime = performance.now() + 400;
-      updateAnticipation();
+      retargetAllFingers();
     }, 1500);
     nextCharTime = performance.now() + 99999; // pause typing
     return;
@@ -341,12 +339,12 @@ function typeNextChar() {
   if (ch === ' ') {
     typeDelay = 100;
     nextCharTime = performance.now() + typeDelay;
-    updateAnticipation();
+
     return;
   }
 
   const pos = findKey(ch);
-  if (!pos) { typeDelay = 80; nextCharTime = performance.now() + typeDelay; updateAnticipation(); return; }
+  if (!pos) { typeDelay = 80; nextCharTime = performance.now() + typeDelay; return; }
 
   const finger = FINGER_MAP_ROW[pos.r][pos.c];
   const hand = finger < 4 ? 0 : 1;
@@ -368,10 +366,10 @@ function typeNextChar() {
   lastFinger = finger;
   lastHand = hand;
 
-  // Set new target for this finger
-  f.targetX = newX;
-  f.targetY = newY;
-  f.returning = false;
+  // Retarget ALL fingers — charIndex advanced, so every finger's next key may have changed
+  // No snap: the finger is already gliding toward this key via the spring.
+  // Just update all targets so every finger smoothly redirects to its next destination.
+  retargetAllFingers();
 
   // Highlight key
   activeKeys.forEach(id => {
@@ -400,7 +398,7 @@ function typeNextChar() {
 
   typeDelay = 80 + Math.random() * 35;
   nextCharTime = performance.now() + typeDelay;
-  updateAnticipation();
+
 }
 
 // ---- Smooth interpolation with critically-damped spring ----
@@ -411,40 +409,15 @@ function animate(now) {
 
   // Critically-damped spring: smoother than underdamped, no oscillation
   // x'' = -k*(x - target) - 2*sqrt(k)*x'
-  const SPRING_K = 0.12;    // lower = smoother, slower response
-  const DAMPING = 0.82;     // higher = less oscillation
-  const ANTICIPATE_STRENGTH = 0.04; // gentle drift toward next key
+  const SPRING_K = 0.045;   // lower = smoother, slower response
+  const DAMPING = 0.88;     // higher = less oscillation, more glide
 
   for (let i = 0; i < 8; i++) {
     const f = fingers[i];
-    const prevX = f.x;
-    const prevY = f.y;
 
-    // Determine effective target
-    let effTargetX = f.targetX;
-    let effTargetY = f.targetY;
-
-    // Only return to homerow if finger won't be used for the rest of the text
-    if (!f.returning) {
-      const nextKey = findNextKeyForFinger(i, charIndex);
-      if (!nextKey) {
-        f.returning = true;
-        f.targetX = f.homeX;
-        f.targetY = f.homeY;
-      }
-    }
-
-    // When finger is near its target and anticipating the next key, lean toward it
-    const distToTarget = Math.sqrt((f.x - f.targetX)**2 + (f.y - f.targetY)**2);
-    if (f.anticipating && distToTarget < 15) {
-      const blend = ANTICIPATE_STRENGTH * (1 - distToTarget / 15);
-      effTargetX = f.targetX + (f.anticipateX - f.targetX) * blend;
-      effTargetY = f.targetY + (f.anticipateY - f.targetY) * blend;
-    }
-
-    // Spring force toward effective target
-    const ax = (effTargetX - f.x) * SPRING_K;
-    const ay = (effTargetY - f.y) * SPRING_K;
+    // Spring force toward target
+    const ax = (f.targetX - f.x) * SPRING_K;
+    const ay = (f.targetY - f.y) * SPRING_K;
 
     f.vx = (f.vx + ax) * DAMPING;
     f.vy = (f.vy + ay) * DAMPING;
@@ -554,7 +527,7 @@ function renderLayoutButtons() {
       lastFinger = -1; lastHand = -1;
       renderKeyboard();
       renderLayoutButtons();
-      updateAnticipation();
+      retargetAllFingers();
     };
     container.appendChild(btn);
   }
@@ -705,7 +678,7 @@ function renderAnalytics() {
 // ---- Init ----
 renderKeyboard();
 renderLayoutButtons();
-updateAnticipation();
+retargetAllFingers();
 nextCharTime = performance.now() + 800;
 requestAnimationFrame(animate);
 </script>

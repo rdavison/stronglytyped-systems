@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" style="background:#0a0a10">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" style="background:#0a0a10">
   <defs>
     <style>
       text { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
-      .title { fill: #d7d7e1; font-size: 14px; font-weight: 500; letter-spacing: 2px; }
+      .title { fill: #d7d7e1; font-size: 13px; font-weight: 500; letter-spacing: 2px; }
       .label { fill: #828296; font-size: 10px; }
-      .label-bright { fill: #d7d7e1; font-size: 10px; }
-      .sublabel { fill: #46465a; font-size: 8px; }
+      .label-bright { fill: #d7d7e1; font-size: 11px; }
+      .sublabel { fill: #46465a; font-size: 9px; }
       .box { rx: 6; ry: 6; stroke-width: 1; }
       .arrow { stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
     </style>
@@ -15,92 +15,35 @@
   </defs>
 
   <!-- Title -->
-  <text x="400" y="30" text-anchor="middle" class="title">COSELF SYSTEM ARCHITECTURE</text>
+  <text x="300" y="28" text-anchor="middle" class="title">SYSTEM ARCHITECTURE</text>
 
-  <!-- Gateways row -->
-  <rect x="40" y="55" width="120" height="50" class="box" fill="#12121a" stroke="#5a8cff"/>
-  <text x="100" y="77" text-anchor="middle" class="label-bright">Discord</text>
-  <text x="100" y="92" text-anchor="middle" class="sublabel">WebSocket gateway</text>
+  <!-- Layer 1: Client Layer -->
+  <rect x="120" y="55" width="360" height="55" class="box" fill="#12121a" stroke="#5a8cff"/>
+  <text x="300" y="78" text-anchor="middle" class="label-bright">Client Layer</text>
+  <text x="300" y="95" text-anchor="middle" class="sublabel">Multiple transports converge on a single brain invocation</text>
 
-  <rect x="200" y="55" width="120" height="50" class="box" fill="#12121a" stroke="#46be6e"/>
-  <text x="260" y="77" text-anchor="middle" class="label-bright">WhatsApp</text>
-  <text x="260" y="92" text-anchor="middle" class="sublabel">Webhook gateway</text>
+  <!-- Arrow down -->
+  <path d="M300,110 L300,140" class="arrow" stroke="#5a8cff"/>
 
-  <rect x="360" y="55" width="120" height="50" class="box" fill="#12121a" stroke="#dcaa32"/>
-  <text x="420" y="77" text-anchor="middle" class="label-bright">HTTP</text>
-  <text x="420" y="92" text-anchor="middle" class="sublabel">Axum server</text>
+  <!-- Layer 2: Brain -->
+  <rect x="120" y="140" width="360" height="55" class="box" fill="#12121a" stroke="#966eff"/>
+  <text x="300" y="163" text-anchor="middle" class="label-bright">Brain</text>
+  <text x="300" y="180" text-anchor="middle" class="sublabel">Identity loaded every invocation · typed event dispatch</text>
 
-  <!-- Arrows from gateways to brain -->
-  <path d="M100,105 L100,130 L300,130 L300,155" class="arrow" stroke="#5a8cff"/>
-  <path d="M260,105 L260,130 L300,130 L300,155" class="arrow" stroke="#46be6e"/>
-  <path d="M420,105 L420,130 L300,130 L300,155" class="arrow" stroke="#dcaa32"/>
+  <!-- Arrows down to identity and logic -->
+  <path d="M220,195 L220,230" class="arrow" stroke="#46be6e" stroke-dasharray="4,3"/>
+  <path d="M380,195 L380,230" class="arrow" stroke="#dcaa32"/>
 
-  <!-- Brain -->
-  <rect x="150" y="155" width="300" height="65" class="box" fill="#12121a" stroke="#966eff"/>
-  <text x="300" y="180" text-anchor="middle" class="label-bright" style="font-size:12px">brain::invoke()</text>
-  <text x="300" y="197" text-anchor="middle" class="sublabel">Load SOUL + CONTEXT + BELIEFS → Claude → Audit</text>
-  <text x="300" y="210" text-anchor="middle" class="sublabel">Stream-JSON parsing · response chunking</text>
+  <!-- Layer 3a: Self Identity -->
+  <rect x="80" y="230" width="240" height="55" class="box" fill="#12121a" stroke="#46be6e" stroke-dasharray="4,3"/>
+  <text x="200" y="253" text-anchor="middle" class="label-bright">Self Identity</text>
+  <text x="200" y="270" text-anchor="middle" class="sublabel">Persistent memory · Bayesian belief state · values</text>
 
-  <!-- Event Runtime -->
-  <rect x="520" y="155" width="240" height="65" class="box" fill="#12121a" stroke="#828296"/>
-  <text x="640" y="180" text-anchor="middle" class="label-bright">Event Runtime</text>
-  <text x="640" y="197" text-anchor="middle" class="sublabel">Typed dispatch → scoped programs</text>
-  <text x="640" y="210" text-anchor="middle" class="sublabel">!monolith kill switch</text>
-
-  <path d="M450,187 L520,187" class="arrow" stroke="#828296"/>
-
-  <!-- Memory files -->
-  <rect x="40" y="260" width="100" height="45" class="box" fill="#12121a" stroke="#5a8cff" stroke-dasharray="4,3"/>
-  <text x="90" y="280" text-anchor="middle" class="label" style="fill:#5a8cff">SOUL.md</text>
-  <text x="90" y="293" text-anchor="middle" class="sublabel">Identity</text>
-
-  <rect x="160" y="260" width="100" height="45" class="box" fill="#12121a" stroke="#46be6e" stroke-dasharray="4,3"/>
-  <text x="210" y="280" text-anchor="middle" class="label" style="fill:#46be6e">CONTEXT.md</text>
-  <text x="210" y="293" text-anchor="middle" class="sublabel">Memory</text>
-
-  <rect x="280" y="260" width="100" height="45" class="box" fill="#12121a" stroke="#dcaa32" stroke-dasharray="4,3"/>
-  <text x="330" y="280" text-anchor="middle" class="label" style="fill:#dcaa32">BELIEFS.md</text>
-  <text x="330" y="293" text-anchor="middle" class="sublabel">Bayesian state</text>
-
-  <!-- Arrows from brain to memory -->
-  <path d="M220,220 L220,230 L90,230 L90,260" class="arrow" stroke="#5a8cff" stroke-dasharray="4,3"/>
-  <path d="M300,220 L300,230 L210,230 L210,260" class="arrow" stroke="#46be6e" stroke-dasharray="4,3"/>
-  <path d="M380,220 L380,230 L330,230 L330,260" class="arrow" stroke="#dcaa32" stroke-dasharray="4,3"/>
-
-  <!-- Reasoning engines row -->
-  <rect x="40" y="340" width="160" height="50" class="box" fill="#12121a" stroke="#5a8cff"/>
-  <text x="120" y="362" text-anchor="middle" class="label-bright">Prolog</text>
-  <text x="120" y="377" text-anchor="middle" class="sublabel">Deductive reasoning</text>
-
-  <rect x="220" y="340" width="160" height="50" class="box" fill="#12121a" stroke="#966eff"/>
-  <text x="300" y="362" text-anchor="middle" class="label-bright">Lean 4</text>
-  <text x="300" y="377" text-anchor="middle" class="sublabel">Formal proofs</text>
-
-  <rect x="400" y="340" width="160" height="50" class="box" fill="#12121a" stroke="#dcaa32"/>
-  <text x="480" y="362" text-anchor="middle" class="label-bright">Futhark</text>
-  <text x="480" y="377" text-anchor="middle" class="sublabel">GPU computation</text>
-
-  <rect x="580" y="340" width="160" height="50" class="box" fill="#12121a" stroke="#46be6e"/>
-  <text x="660" y="362" text-anchor="middle" class="label-bright">MiniZinc</text>
-  <text x="660" y="377" text-anchor="middle" class="sublabel">Constraint optimization</text>
-
-  <!-- Arrows from engines to brain (upward) -->
-  <path d="M120,340 L120,320 L200,320 L200,220" class="arrow" stroke="#5a8cff"/>
-  <path d="M300,340 L300,320 L300,220" class="arrow" stroke="#966eff"/>
-  <path d="M480,340 L480,320 L400,320 L400,220" class="arrow" stroke="#dcaa32"/>
-  <path d="M660,340 L660,320 L440,320 L440,220" class="arrow" stroke="#46be6e"/>
-
-  <!-- Parallel indicator -->
-  <text x="400" y="320" text-anchor="middle" class="sublabel" style="fill:#828296">run in parallel before every invocation</text>
-
-  <!-- Portal -->
-  <rect x="520" y="260" width="220" height="45" class="box" fill="#12121a" stroke="#dc4646"/>
-  <text x="630" y="280" text-anchor="middle" class="label-bright">Native Portal</text>
-  <text x="630" y="293" text-anchor="middle" class="sublabel">egui + SwiftUI · GPU canvas · live state</text>
-
-  <path d="M640,260 L640,220" class="arrow" stroke="#dc4646"/>
+  <!-- Layer 3b: Logic Engine -->
+  <rect x="340" y="230" width="180" height="55" class="box" fill="#12121a" stroke="#dcaa32"/>
+  <text x="430" y="253" text-anchor="middle" class="label-bright">Logic Engine</text>
+  <text x="430" y="270" text-anchor="middle" class="sublabel">Deductive · formal · parallel · constraint</text>
 
   <!-- Bottom label -->
-  <text x="400" y="430" text-anchor="middle" class="sublabel" style="fill:#46465a">Rust · Axum · Tokio · Edition 2024</text>
-  <text x="400" y="445" text-anchor="middle" class="sublabel" style="fill:#46465a">One mind, many modes — not multi-agent</text>
+  <text x="300" y="325" text-anchor="middle" class="sublabel" style="fill:#46465a">One mind, many modes — not multi-agent</text>
 </svg>

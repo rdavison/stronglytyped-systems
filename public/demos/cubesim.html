@@ -85,54 +85,64 @@ function rotateFaceCW(name) {
 
 function applyMove(m, ccw) {
   if (ccw) { applyMove(m, false); applyMove(m, false); applyMove(m, false); return; }
+  // All permutations derived from 3D cubie coordinate geometry.
+  // Each face's sticker (row,col) maps to a world position; the CW rotation
+  // transform determines which sticker index moves where, including reversals
+  // at face boundaries where coordinate axes flip orientation.
   switch(m) {
     case 'U':
+      // U CW (looking down): F→R(rev), R→B, B→L, L(rev)→F
       rotateFaceCW('U');
-      var t = [faces.F[0],faces.F[1],faces.F[2]];
-      faces.F[0]=faces.R[0]; faces.F[1]=faces.R[1]; faces.F[2]=faces.R[2];
-      faces.R[0]=faces.B[0]; faces.R[1]=faces.B[1]; faces.R[2]=faces.B[2];
-      faces.B[0]=faces.L[0]; faces.B[1]=faces.L[1]; faces.B[2]=faces.L[2];
-      faces.L[0]=t[0]; faces.L[1]=t[1]; faces.L[2]=t[2];
+      var t = [faces.F[0], faces.F[1], faces.F[2]];
+      faces.F[0]=faces.L[2]; faces.F[1]=faces.L[1]; faces.F[2]=faces.L[0];
+      faces.L[0]=faces.B[0]; faces.L[1]=faces.B[1]; faces.L[2]=faces.B[2];
+      faces.B[0]=faces.R[0]; faces.B[1]=faces.R[1]; faces.B[2]=faces.R[2];
+      faces.R[0]=t[2]; faces.R[1]=t[1]; faces.R[2]=t[0];
       break;
     case 'D':
+      // D CW (looking up from below): F→L(rev), L→B, B→R, R(rev)→F
       rotateFaceCW('D');
-      var t = [faces.F[6],faces.F[7],faces.F[8]];
-      faces.F[6]=faces.L[6]; faces.F[7]=faces.L[7]; faces.F[8]=faces.L[8];
-      faces.L[6]=faces.B[6]; faces.L[7]=faces.B[7]; faces.L[8]=faces.B[8];
-      faces.B[6]=faces.R[6]; faces.B[7]=faces.R[7]; faces.B[8]=faces.R[8];
-      faces.R[6]=t[0]; faces.R[7]=t[1]; faces.R[8]=t[2];
+      var t = [faces.F[6], faces.F[7], faces.F[8]];
+      faces.F[6]=faces.R[8]; faces.F[7]=faces.R[7]; faces.F[8]=faces.R[6];
+      faces.R[6]=faces.B[6]; faces.R[7]=faces.B[7]; faces.R[8]=faces.B[8];
+      faces.B[6]=faces.L[6]; faces.B[7]=faces.L[7]; faces.B[8]=faces.L[8];
+      faces.L[6]=t[2]; faces.L[7]=t[1]; faces.L[8]=t[0];
       break;
     case 'F':
+      // F CW (looking at front): U→R, R(rev)→D, D→L, L(rev)→U
       rotateFaceCW('F');
-      var t = [faces.U[6],faces.U[7],faces.U[8]];
-      faces.U[6]=faces.L[8]; faces.U[7]=faces.L[5]; faces.U[8]=faces.L[2];
-      faces.L[2]=faces.D[0]; faces.L[5]=faces.D[1]; faces.L[8]=faces.D[2];
-      faces.D[0]=faces.R[6]; faces.D[1]=faces.R[3]; faces.D[2]=faces.R[0];
-      faces.R[0]=t[0]; faces.R[3]=t[1]; faces.R[6]=t[2];
+      var t = [faces.U[6], faces.U[7], faces.U[8]];
+      faces.U[6]=faces.L[6]; faces.U[7]=faces.L[3]; faces.U[8]=faces.L[0];
+      faces.L[0]=faces.D[0]; faces.L[3]=faces.D[1]; faces.L[6]=faces.D[2];
+      faces.D[0]=faces.R[8]; faces.D[1]=faces.R[5]; faces.D[2]=faces.R[2];
+      faces.R[2]=t[0]; faces.R[5]=t[1]; faces.R[8]=t[2];
       break;
     case 'B':
+      // B CW (looking at back from behind): U→L(rev), L→D, D(rev)→R, R→U
       rotateFaceCW('B');
-      var t = [faces.U[0],faces.U[1],faces.U[2]];
-      faces.U[0]=faces.R[2]; faces.U[1]=faces.R[5]; faces.U[2]=faces.R[8];
-      faces.R[2]=faces.D[8]; faces.R[5]=faces.D[7]; faces.R[8]=faces.D[6];
-      faces.D[6]=faces.L[0]; faces.D[7]=faces.L[3]; faces.D[8]=faces.L[6];
-      faces.L[0]=t[2]; faces.L[3]=t[1]; faces.L[6]=t[0];
+      var t = [faces.U[0], faces.U[1], faces.U[2]];
+      faces.U[0]=faces.R[0]; faces.U[1]=faces.R[3]; faces.U[2]=faces.R[6];
+      faces.R[0]=faces.D[8]; faces.R[3]=faces.D[7]; faces.R[6]=faces.D[6];
+      faces.D[6]=faces.L[2]; faces.D[7]=faces.L[5]; faces.D[8]=faces.L[8];
+      faces.L[2]=t[2]; faces.L[5]=t[1]; faces.L[8]=t[0];
       break;
     case 'L':
+      // L CW (looking from left): U→B(rev), B(rev)→D, D→F, F→U
       rotateFaceCW('L');
-      var t = [faces.U[0],faces.U[3],faces.U[6]];
-      faces.U[0]=faces.B[8]; faces.U[3]=faces.B[5]; faces.U[6]=faces.B[2];
-      faces.B[2]=faces.D[6]; faces.B[5]=faces.D[3]; faces.B[8]=faces.D[0];
-      faces.D[0]=faces.F[0]; faces.D[3]=faces.F[3]; faces.D[6]=faces.F[6];
-      faces.F[0]=t[0]; faces.F[3]=t[1]; faces.F[6]=t[2];
+      var t = [faces.U[0], faces.U[3], faces.U[6]];
+      faces.U[0]=faces.F[0]; faces.U[3]=faces.F[3]; faces.U[6]=faces.F[6];
+      faces.F[0]=faces.D[0]; faces.F[3]=faces.D[3]; faces.F[6]=faces.D[6];
+      faces.D[0]=faces.B[6]; faces.D[3]=faces.B[3]; faces.D[6]=faces.B[0];
+      faces.B[0]=t[2]; faces.B[3]=t[1]; faces.B[6]=t[0];
       break;
     case 'R':
+      // R CW (looking from right): U→F, F→D, D→B(rev), B(rev)→U
       rotateFaceCW('R');
-      var t = [faces.U[2],faces.U[5],faces.U[8]];
-      faces.U[2]=faces.F[2]; faces.U[5]=faces.F[5]; faces.U[8]=faces.F[8];
-      faces.F[2]=faces.D[2]; faces.F[5]=faces.D[5]; faces.F[8]=faces.D[8];
-      faces.D[2]=faces.B[6]; faces.D[5]=faces.B[3]; faces.D[8]=faces.B[0];
-      faces.B[0]=t[2]; faces.B[3]=t[1]; faces.B[6]=t[0];
+      var t = [faces.U[2], faces.U[5], faces.U[8]];
+      faces.U[2]=faces.B[8]; faces.U[5]=faces.B[5]; faces.U[8]=faces.B[2];
+      faces.B[2]=faces.D[8]; faces.B[5]=faces.D[5]; faces.B[8]=faces.D[2];
+      faces.D[2]=faces.F[2]; faces.D[5]=faces.F[5]; faces.D[8]=faces.F[8];
+      faces.F[2]=t[0]; faces.F[5]=t[1]; faces.F[8]=t[2];
       break;
   }
 }
@@ -223,16 +233,16 @@ function getAffectedStickers(moveFace) {
       for (let i = 0; i < 3; i++) {
         affected.push({ face: 'U', r: 2, c: i });
         affected.push({ face: 'D', r: 0, c: i });
-        affected.push({ face: 'L', r: i, c: 2 });
-        affected.push({ face: 'R', r: i, c: 0 });
+        affected.push({ face: 'L', r: i, c: 0 });
+        affected.push({ face: 'R', r: i, c: 2 });
       }
       break;
     case 'B':
       for (let i = 0; i < 3; i++) {
         affected.push({ face: 'U', r: 0, c: i });
         affected.push({ face: 'D', r: 2, c: i });
-        affected.push({ face: 'L', r: i, c: 0 });
-        affected.push({ face: 'R', r: i, c: 2 });
+        affected.push({ face: 'L', r: i, c: 2 });
+        affected.push({ face: 'R', r: i, c: 0 });
       }
       break;
     case 'L':
@@ -240,7 +250,7 @@ function getAffectedStickers(moveFace) {
         affected.push({ face: 'U', r: i, c: 0 });
         affected.push({ face: 'D', r: i, c: 0 });
         affected.push({ face: 'F', r: i, c: 0 });
-        affected.push({ face: 'B', r: i, c: 2 });
+        affected.push({ face: 'B', r: i, c: 0 });
       }
       break;
     case 'R':
@@ -248,7 +258,7 @@ function getAffectedStickers(moveFace) {
         affected.push({ face: 'U', r: i, c: 2 });
         affected.push({ face: 'D', r: i, c: 2 });
         affected.push({ face: 'F', r: i, c: 2 });
-        affected.push({ face: 'B', r: i, c: 0 });
+        affected.push({ face: 'B', r: i, c: 2 });
       }
       break;
   }
@@ -257,13 +267,16 @@ function getAffectedStickers(moveFace) {
 
 // Build the rotation matrix for animating a face turn
 function faceAnimMatrix(faceName, angle) {
+  // Signs derived so that +angle = CW when viewing each face from outside.
+  // U/R use positive axis rotation; D/L negate to reverse axis;
+  // F/B swap signs relative to naive Z-rotation due to viewing direction.
   switch (faceName) {
     case 'U': return rotMatY(angle);
     case 'D': return rotMatY(-angle);
     case 'R': return rotMatX(angle);
     case 'L': return rotMatX(-angle);
-    case 'F': return rotMatZ(angle);
-    case 'B': return rotMatZ(-angle);
+    case 'F': return rotMatZ(-angle);
+    case 'B': return rotMatZ(angle);
   }
 }
 
@@ -476,7 +489,7 @@ function scramble() {
       const now = performance.now();
       const elapsed = now - anim.startTime;
       const t = Math.min(1, elapsed / anim.duration);
-      const targetAngle = anim.ccw ? Math.PI / 2 : -Math.PI / 2;
+      const targetAngle = anim.ccw ? -Math.PI / 2 : Math.PI / 2;
       anim.currentAngle = targetAngle * easeOutCubic(t);
       draw();
       if (t < 1) {

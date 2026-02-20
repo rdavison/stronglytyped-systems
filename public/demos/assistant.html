@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coself — Personal Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a10;
+    --surface: #12121a;
+    --border: #232332;
+    --text: #d7d7e1;
+    --text-muted: #828296;
+    --text-dim: #46465a;
+    --accent: #5a8cff;
+    --accent-secondary: #966eff;
+    --healthy: #46be6e;
+    --warning: #dcaa32;
+    --error: #dc4646;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); height: 100vh; overflow: hidden; }
+
+  .portal { width: 100%; height: 100%; padding: 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+  .header { display: flex; align-items: baseline; justify-content: space-between; }
+  .header h1 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-dim); }
+  .header-time { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+  .greeting { font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .greeting span { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; overflow: hidden; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; overflow: hidden; }
+  .card-header { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .card-badge { font-family: var(--font-mono); font-size: 9px; padding: 2px 8px; border-radius: 10px; }
+  .badge-action { background: rgba(90, 140, 255, 0.12); color: var(--accent); }
+  .badge-ok { background: rgba(70, 190, 110, 0.12); color: var(--healthy); }
+
+  /* Email section */
+  .email-triage { border-color: rgba(90, 140, 255, 0.2); }
+  .triage-summary { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+  .triage-summary strong { color: var(--text); font-weight: 500; }
+  .triage-action { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(90, 140, 255, 0.06); border: 1px solid rgba(90, 140, 255, 0.15); border-radius: 6px; cursor: pointer; transition: all 0.15s; margin-bottom: 8px; }
+  .triage-action:hover { border-color: rgba(90, 140, 255, 0.35); background: rgba(90, 140, 255, 0.1); }
+  .triage-action-icon { font-size: 14px; color: var(--accent); flex-shrink: 0; width: 20px; text-align: center; }
+  .triage-action-text { font-size: 11px; color: var(--text-muted); }
+  .triage-action-text strong { color: var(--text); font-weight: 500; }
+
+  .email-draft { padding: 8px 0; border-top: 1px solid var(--border); }
+  .email-draft-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .email-from { font-family: var(--font-mono); font-size: 10px; color: var(--text); }
+  .email-subject { font-size: 10px; color: var(--text-dim); }
+  .email-preview { font-size: 10px; color: var(--accent-secondary); font-style: italic; margin-top: 4px; opacity: 0.8; }
+  .email-tag { font-family: var(--font-mono); font-size: 8px; padding: 1px 6px; border-radius: 8px; background: rgba(150, 110, 255, 0.12); color: var(--accent-secondary); }
+
+  /* Weather */
+  .weather-card { border-color: rgba(220, 170, 50, 0.15); }
+  .weather-main { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .weather-temp { font-family: var(--font-mono); font-size: 32px; color: var(--text); font-weight: 300; }
+  .weather-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .weather-detail { display: flex; gap: 16px; }
+  .weather-detail-item { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); }
+  .weather-detail-item span { color: var(--text-muted); }
+
+  /* Tasks */
+  .tasks-card { grid-column: 1 / -1; border-color: rgba(70, 190, 110, 0.15); }
+  .task-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; }
+  .task-column-title { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .task-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; }
+  .task-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .task-dot.required { background: var(--healthy); }
+  .task-dot.suggested { background: var(--text-dim); }
+  .task-dot.urgent { background: var(--error); }
+  .task-text { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  .task-text strong { color: var(--text); font-weight: 500; }
+  .task-time { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+
+  .status-bar { display: flex; align-items: center; gap: 16px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--healthy); animation: pulse 2s ease-in-out infinite; }
+  .status-text { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="portal">
+  <div class="header">
+    <div>
+      <h1>Coself</h1>
+      <div class="greeting">Good morning, <span>Self</span>.</div>
+    </div>
+    <div class="header-time">Thu Feb 20 &middot; 8:42 AM EST</div>
+  </div>
+
+  <div class="grid">
+    <!-- Email Triage -->
+    <div class="card email-triage">
+      <div class="card-header">Email Triage <span class="card-badge badge-action">3 actions</span></div>
+      <div class="triage-summary">
+        Scanned <strong>74 threads</strong> overnight. <strong>67</strong> are noise &mdash; newsletters, notifications, automated alerts. <strong>7</strong> need attention.
+      </div>
+      <div class="triage-action">
+        <div class="triage-action-icon">&#x2715;</div>
+        <div class="triage-action-text">Archive <strong>67 noise threads</strong> &mdash; zero signal detected</div>
+      </div>
+
+      <div class="email-draft">
+        <div class="email-draft-header">
+          <span class="email-from">Sarah Chen</span>
+          <span class="email-tag">draft ready</span>
+        </div>
+        <div class="email-subject">Senior SWE &mdash; Infrastructure Team</div>
+        <div class="email-preview">"Thanks for reaching out. I'd be interested in learning more about the role..."</div>
+      </div>
+
+      <div class="email-draft">
+        <div class="email-draft-header">
+          <span class="email-from">Alex Rivera</span>
+          <span class="email-tag">draft ready</span>
+        </div>
+        <div class="email-subject">Community Orchestra &mdash; Tue rehearsal</div>
+        <div class="email-preview">"Looking forward to it. I'll bring my instrument and arrive by 5:15."</div>
+      </div>
+
+      <div class="email-draft">
+        <div class="email-draft-header">
+          <span class="email-from">Marcus Wei</span>
+          <span class="email-tag">needs review</span>
+        </div>
+        <div class="email-subject">Product Engineering Role</div>
+        <div class="email-preview">"Leaning toward passing &mdash; want to confirm before I draft a reply."</div>
+      </div>
+    </div>
+
+    <!-- Weather -->
+    <div class="card weather-card">
+      <div class="card-header">Weather &middot; NYC <span class="card-badge badge-ok">mild</span></div>
+      <div class="weather-main">
+        <div class="weather-temp">41&deg;</div>
+        <div class="weather-desc">
+          Overcast, clearing by afternoon.<br/>
+          High 48&deg; &middot; Low 35&deg;
+        </div>
+      </div>
+      <div class="weather-detail">
+        <div class="weather-detail-item">Wind <span>8 mph NW</span></div>
+        <div class="weather-detail-item">Humidity <span>62%</span></div>
+        <div class="weather-detail-item">Precip <span>5%</span></div>
+        <div class="weather-detail-item">Sunset <span>5:38 PM</span></div>
+      </div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="card tasks-card">
+      <div class="card-header">Today <span class="card-badge badge-ok">6 items</span></div>
+      <div class="task-columns">
+        <div>
+          <div class="task-column-title">Non-negotiable</div>
+          <div class="task-item">
+            <div class="task-dot urgent"></div>
+            <div>
+              <div class="task-text"><strong>Visa appointment</strong> &mdash; check for cancellation slots</div>
+              <div class="task-time">Recurring &middot; check 3x daily</div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-dot required"></div>
+            <div>
+              <div class="task-text"><strong>Reply to Sarah</strong> &mdash; review and send draft</div>
+              <div class="task-time">Before noon</div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-dot required"></div>
+            <div>
+              <div class="task-text"><strong>Travel documents</strong> &mdash; confirm processing status</div>
+              <div class="task-time">Afternoon</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="task-column-title">Suggested</div>
+          <div class="task-item">
+            <div class="task-dot suggested"></div>
+            <div>
+              <div class="task-text">Deploy portfolio site updates</div>
+              <div class="task-time">~30 min</div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-dot suggested"></div>
+            <div>
+              <div class="task-text">Book hotel for upcoming trip</div>
+              <div class="task-time">~15 min</div>
+            </div>
+          </div>
+          <div class="task-item">
+            <div class="task-dot suggested"></div>
+            <div>
+              <div class="task-text">LeetCode daily &mdash; maintain streak</div>
+              <div class="task-time">~45 min</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span class="status-text">Brain active &middot; 4 engines nominal &middot; Last sync 2 min ago</span>
+  </div>
+</div>
+</body>
+</html>

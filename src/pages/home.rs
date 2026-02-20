@@ -57,19 +57,19 @@ pub fn HomePage() -> impl IntoView {
             <div class="hero__proof-lines">
                 <a href="/projects" class="proof-line">
                     <span class="proof-line__domain">"AI Agents"</span>
-                    <span class="proof-line__claim">"One brain serving Discord, WhatsApp, and HTTP — with Lean 4 proofs verifying behavioral invariants"</span>
+                    <span class="proof-line__claim">"One brain serving three transports with formally verified behavioral invariants"</span>
                 </a>
                 <a href="/projects" class="proof-line">
                     <span class="proof-line__domain">"Systems"</span>
-                    <span class="proof-line__claim">"Event-driven runtime with typed dispatch, scoped programs, and hot-reloadable architecture in Rust"</span>
+                    <span class="proof-line__claim">"Event-driven runtime with typed dispatch and scoped programs in Rust"</span>
                 </a>
                 <a href="/projects" class="proof-line">
                     <span class="proof-line__domain">"Input"</span>
-                    <span class="proof-line__claim">"Custom effort models scoring SFBs, scissors, and lateral stretches across 6 keyboard layouts at 50fps"</span>
+                    <span class="proof-line__claim">"Ergonomic effort models across six keyboard layouts with real-time visualization"</span>
                 </a>
                 <a href="/projects" class="proof-line">
                     <span class="proof-line__domain">"Formal"</span>
-                    <span class="proof-line__claim">"Prolog deduction, MiniZinc constraint optimization, and Futhark GPU computation — not just types, theorems"</span>
+                    <span class="proof-line__claim">"Theorem proving, constraint optimization, and GPU-parallel computation in production"</span>
                 </a>
             </div>
 

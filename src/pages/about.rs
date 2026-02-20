@@ -10,18 +10,13 @@ pub fn AboutPage() -> impl IntoView {
 
             <section class="about__bio">
                 <p class="about__lead">
-                    "I play bassoon at an orchestral level, speak six languages at varying degrees of fluency, "
-                    "and solve Rubik\u{2019}s cubes competitively. I believe intelligence is built upon language "
-                    "through all layers \u{2014} it\u{2019}s languages all the way down."
-                </p>
-                <p>
-                    "My through-line is the interface between human intention and physical output. "
-                    "It manifests in three domains I keep returning to: keyboards and input systems, "
-                    "music and composition, and programming languages. Three domains, one obsession."
-                </p>
-                <p>
                     "11+ years shipping production systems across adtech, genomics, cloud infrastructure, and AI. "
-                    "I think in type systems and composition laws. I see structure where others see features."
+                    "I think in type systems and composition laws."
+                </p>
+                <p>
+                    "I play bassoon at an orchestral level, speak six languages, and solve Rubik\u{2019}s cubes competitively. "
+                    "Outside of work, I keep returning to three domains: keyboards and input systems, "
+                    "music, and programming languages."
                 </p>
             </section>
 
@@ -31,32 +26,26 @@ pub fn AboutPage() -> impl IntoView {
                 <div class="depth-story">
                     <h3>"Formal verification in production"</h3>
                     <p>
-                        "I use Lean 4 not as a resume line but as a reasoning engine \u{2014} "
-                        "Coself proves behavioral invariants about its own agent architecture before execution. "
-                        "Alongside Prolog for deductive queries, MiniZinc for constraint optimization, "
-                        "and Futhark for GPU-parallel computation, the system makes decisions that are "
-                        "formally verified, not just tested."
+                        "Lean 4, Prolog, MiniZinc, and Futhark running as reasoning engines \u{2014} "
+                        "proving behavioral invariants, deductive queries, constraint optimization, "
+                        "and GPU-parallel computation. Decisions are formally verified, not just tested."
                     </p>
                 </div>
 
                 <div class="depth-story">
                     <h3>"Type-driven systems in Rust and OCaml"</h3>
                     <p>
-                        "Seven years of OCaml at Solvuu taught me to lean on the type system as a design tool, "
-                        "not just a safety net. Parse-don\u{2019}t-validate, exhaustive matching, newtype wrappers \u{2014} "
-                        "if the compiler can\u{2019}t prove a property, I write a test. If it can, I don\u{2019}t. "
-                        "I brought this discipline into Rust when I built Coself\u{2019}s event runtime."
+                        "Seven years of OCaml, then Rust. Parse-don\u{2019}t-validate, exhaustive matching, "
+                        "newtype wrappers. If the compiler can prove it, I don\u{2019}t test it. If it can\u{2019}t, I do."
                     </p>
                 </div>
 
                 <div class="depth-story">
                     <h3>"Human input systems"</h3>
                     <p>
-                        "Keyboards fascinate me because they\u{2019}re the tightest loop between thought and output. "
-                        "I\u{2019}ve built effort models that score same-finger bigrams, scissors, lateral stretches, "
-                        "and hand alternation across six layouts. I designed a custom layout optimized for alternation. "
-                        "The same obsession extends to music (bassoon technique is a physical interface problem) "
-                        "and IPA phonetics (how do mouths produce language?)."
+                        "Effort models scoring same-finger bigrams, scissors, lateral stretches, "
+                        "and hand alternation across six keyboard layouts. Custom layout design "
+                        "optimized for alternation."
                     </p>
                 </div>
             </section>

@@ -372,7 +372,6 @@ function typeNextChar() {
   f.targetX = newX;
   f.targetY = newY;
   f.returning = false;
-  f.returnTimer = performance.now() + 200;
 
   // Highlight key
   activeKeys.forEach(id => {
@@ -425,17 +424,11 @@ function animate(now) {
     let effTargetX = f.targetX;
     let effTargetY = f.targetY;
 
-    // Check if finger should start returning
-    if (!f.returning && f.returnTimer > 0 && now > f.returnTimer) {
-      f.returning = true;
+    // Only return to homerow if finger won't be used for the rest of the text
+    if (!f.returning) {
       const nextKey = findNextKeyForFinger(i, charIndex);
-      if (nextKey) {
-        // Return toward a point between home and anticipated next key
-        const nkx = keyCX(nextKey.r, nextKey.c);
-        const nky = fingerY(nextKey.r);
-        f.targetX = f.homeX + (nkx - f.homeX) * 0.5;
-        f.targetY = f.homeY + (nky - f.homeY) * 0.5;
-      } else {
+      if (!nextKey) {
+        f.returning = true;
         f.targetX = f.homeX;
         f.targetY = f.homeY;
       }

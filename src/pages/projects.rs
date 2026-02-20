@@ -17,11 +17,12 @@ pub struct Project {
 fn get_flagship() -> Project {
     Project {
         name: "Coself",
-        description: "AI agent system that orchestrates LLM reasoning across Discord, WhatsApp, and HTTP through a single brain with persistent memory. Event-driven runtime with typed dispatch routes to scoped programs. Native macOS portal renders live state as a spatial field \u{2014} beliefs, conversation topology, and reasoning visualized on a GPU-rendered canvas.",
-        highlight: Some("Single brain architecture serving three transports, with Lean 4 proofs verifying behavioral invariants before execution."),
+        description: "AI agent system with a single brain serving Discord, WhatsApp, and HTTP. Persistent memory, event-driven runtime with typed dispatch, and a native macOS portal rendering live state on a GPU canvas.",
+        highlight: Some("Formally verified behavioral invariants. Four reasoning engines running in parallel per invocation."),
         stack: "Rust \u{b7} Axum \u{b7} Tokio \u{b7} Lean 4 \u{b7} egui \u{b7} SwiftUI",
         url: None,
         demos: &[
+            ("Assistant", "/demos/assistant.html"),
             ("Sprint Lifecycle", "/demos/sprint-lifecycle.html"),
             ("Sprint Kanban", "/demos/sprint-kanban.html"),
             ("Trip Planner", "/demos/trip.html"),
@@ -34,8 +35,8 @@ fn get_explorations() -> Vec<Project> {
     vec![
         Project {
             name: "qwerkey",
-            description: "Keyboard typing visualizer and effort analyzer. Animated fingers move across the keyboard at 50fps tracking travel distance, same-finger bigrams, scissors, rolls, and ergonomic cost. Includes a layout analytics tab comparing QWERTY, Colemak, Dvorak, and Graphite across five metrics.",
-            highlight: Some("Custom effort model with spring-physics finger animation and comparative layout analysis across four keyboards."),
+            description: "Keyboard typing visualizer and effort analyzer. Spring-physics finger animation at 50fps with travel distance, same-finger bigrams, and ergonomic cost tracking. Layout analytics tab comparing four keyboards across five metrics.",
+            highlight: Some("Custom effort model with real-time finger animation and comparative layout analysis."),
             stack: "OCaml \u{b7} Jane Street Bonsai \u{b7} js_of_ocaml",
             url: None,
             demos: &[("Demo", "/demos/qwerkey.html")],
@@ -43,8 +44,8 @@ fn get_explorations() -> Vec<Project> {
         },
         Project {
             name: "Frobisher",
-            description: "Fork of Rectangle (macOS window manager) with original contributions: carousel-based app switcher with alpha crossfade, window staging system, and CVDisplayLink-driven animation. Named after Robert Frobisher from Cloud Atlas \u{2014} whose Cloud Atlas Sextet is a tiling algorithm rendered as music.",
-            highlight: Some("CVDisplayLink animation pipeline with per-frame alpha compositing at display refresh rate."),
+            description: "macOS window manager with carousel-based app switcher, alpha crossfade transitions, and window staging. CVDisplayLink-driven animation at display refresh rate.",
+            highlight: Some("Per-frame alpha compositing pipeline synced to the display refresh rate."),
             stack: "Swift \u{b7} macOS \u{b7} CoreGraphics \u{b7} CVDisplayLink",
             url: None,
             demos: &[("Demo", "/demos/rektangle.html")],
@@ -52,8 +53,8 @@ fn get_explorations() -> Vec<Project> {
         },
         Project {
             name: "cubesim",
-            description: "Interactive 3D Rubik\u{2019}s cube simulator with perspective projection, per-face lighting, animated face rotations, and drag-to-rotate camera.",
-            highlight: Some("Animated face rotations with eased interpolation and painter\u{2019}s algorithm depth sorting."),
+            description: "Interactive 3D Rubik\u{2019}s cube simulator with perspective projection, per-face lighting, animated rotations, and drag-to-rotate camera.",
+            highlight: Some("3D perspective rendering with painter\u{2019}s algorithm and eased face rotation animation."),
             stack: "Rust \u{b7} Bevy \u{b7} 3D",
             url: None,
             demos: &[("Demo", "/demos/cubesim.html")],

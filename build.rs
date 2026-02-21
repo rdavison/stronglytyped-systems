@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use syntect::highlighting::ThemeSet;
 use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
@@ -210,10 +210,10 @@ fn render_markdown(content: &str, ss: &SyntaxSet, theme: &syntect::highlighting:
                 html_output.push_str("</code>");
             }
             Event::Start(Tag::Heading { level, .. }) => {
-                html_output.push_str(&format!("<h{}>", level as u8));
+                html_output.push_str(&format!("<h{}>", heading_level_num(level)));
             }
             Event::End(TagEnd::Heading(level)) => {
-                html_output.push_str(&format!("</h{}>", level as u8));
+                html_output.push_str(&format!("</h{}>", heading_level_num(level)));
             }
             Event::Start(Tag::Paragraph) => {
                 html_output.push_str("<p>");
@@ -291,6 +291,17 @@ fn render_markdown(content: &str, ss: &SyntaxSet, theme: &syntect::highlighting:
     }
 
     html_output
+}
+
+fn heading_level_num(level: HeadingLevel) -> u8 {
+    match level {
+        HeadingLevel::H1 => 1,
+        HeadingLevel::H2 => 2,
+        HeadingLevel::H3 => 3,
+        HeadingLevel::H4 => 4,
+        HeadingLevel::H5 => 5,
+        HeadingLevel::H6 => 6,
+    }
 }
 
 fn html_escape(s: &str) -> String {

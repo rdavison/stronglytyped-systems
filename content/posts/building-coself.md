@@ -97,3 +97,5 @@ The question now is whether this architecture scales — not in the "millions of
 ---
 
 *Built with Rust, Axum, and Tokio. The system runs on a MacBook and talks to Claude.*
+
+*If this kind of systems thinking is what your team needs, [hire me](/hire-me).*

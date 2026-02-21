@@ -69,3 +69,5 @@ The models are already good enough. The architecture around them is what determi
 ---
 
 *This is the same principle that makes peer review work in science, cross-examination work in law, and ensemble methods work in machine learning. The underlying math hasn't changed. We're just applying it to a new kind of noisy oracle.*
+
+*If this kind of systems thinking is what your team needs, [hire me](/hire-me).*

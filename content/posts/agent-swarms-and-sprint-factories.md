@@ -71,3 +71,5 @@ That last point is the one I'm still learning. I'm a builder. My instinct is to 
 ---
 
 *All of this runs on a single MacBook. The parliament debates happen in a conversation. The sprint factory is a methodology enforced by the system itself. No cloud orchestration, no Kubernetes, no fleet of VMs. Just structured thinking applied consistently.*
+
+*If this kind of systems thinking is what your team needs, [hire me](/hire-me).*

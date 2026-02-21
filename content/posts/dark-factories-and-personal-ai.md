@@ -67,3 +67,5 @@ I built Coself because I wanted an AI that could keep up with my life. It does. 
 ---
 
 *Built with Rust, Axum, and Tokio. Runs on a MacBook. Talks to Claude.*
+
+*If this kind of systems thinking is what your team needs, [hire me](/hire-me).*

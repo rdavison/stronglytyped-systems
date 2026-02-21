@@ -12,19 +12,21 @@ There's a video making the rounds about "dark factories" — fully autonomous so
 
 It's real. A handful of teams are genuinely operating there. But most of the industry is stuck at what one framework calls "level two" — using AI as a slightly faster junior developer, getting measurably slower while believing they're speeding up.
 
-I've been thinking about this gap from a different angle. Instead of trying to automate a team, I asked: what if I automated *myself*?
+> I've been thinking about this gap from a different angle. Instead of trying to automate a team, I asked: what if I automated *myself*?
 
 ## What I Built
 
 Coself is a personal AI assistant I built from scratch. It runs on my phone, my laptop, and my desktop. I can talk to it over Discord, WhatsApp, or a web browser. It doesn't matter which — they all reach the same brain.
 
-That last part is the key architectural decision. There's one brain, not three chatbots. Every message, regardless of where it comes from, goes through the same invocation path. The system loads the same memory, runs the same reasoning, writes to the same log. There is no "Discord version" that forgot what I said on WhatsApp.
+That last part is the key architectural decision. There's **one brain**, not three chatbots. Every message, regardless of where it comes from, goes through the same invocation path. The system loads the same memory, runs the same reasoning, writes to the same log. There is no "Discord version" that forgot what I said on WhatsApp.
 
 ![System architecture](/images/coself-architecture.svg "Coself system architecture")
 
 ## It Remembers Everything
 
-Not "retrieves relevant context." Actually remembers. The full identity state — conversations, decisions, beliefs, open questions — loads on every single invocation. The failure mode of most AI assistants is amnesia. You have the same conversation three times because the system forgot the first two. Mine doesn't forget.
+Not "retrieves relevant context." Actually remembers. The full identity state — conversations, decisions, beliefs, open questions — loads on every single invocation.
+
+> The failure mode of most AI assistants is amnesia. You have the same conversation three times because the system forgot the first two. Mine doesn't forget.
 
 ## It Reasons Before Acting
 
@@ -42,7 +44,7 @@ This isn't a toy. Here's what it handles for me on a regular basis:
 
 ## Why I Built It From Scratch
 
-There are plenty of AI assistant products out there. I could have used one. But they all share the same limitation: they don't know me.
+There are plenty of AI assistant products out there. I could have used one. But they all share the same limitation: **they don't know me.**
 
 A generic assistant starts every conversation from zero. It doesn't know my preferences, my relationships, my ongoing projects, my belief system. It can't reason about my life because it has no model of my life.
 
@@ -54,7 +56,9 @@ The video about dark factories talks about a future where specs go in and softwa
 
 Most people don't need a software factory. They need an assistant that actually works — one that remembers what they said last week, that can reason about tradeoffs instead of just generating text, that can handle real tasks across real systems.
 
-The gap between "chatbot with a database" and "assistant that knows you" is enormous. It's the same gap the video describes between level two and level five. The difference isn't the model — it's the architecture around the model. Memory, reasoning, identity, multi-transport. That's what makes the system useful instead of just impressive.
+> The gap between "chatbot with a database" and "assistant that knows you" is enormous. It's the same gap the video describes between level two and level five. The difference isn't the model — it's the architecture around the model.
+
+Memory, reasoning, identity, multi-transport. That's what makes the system useful instead of just impressive.
 
 I built Coself because I wanted an AI that could keep up with my life. It does. And every time the underlying models improve, the system gets better without me changing the architecture. The brain is the constant. The intelligence is the variable.
 

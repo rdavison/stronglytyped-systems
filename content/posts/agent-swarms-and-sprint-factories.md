@@ -1,6 +1,6 @@
 ---
 title: "Agent Swarms Are Not What You Think"
-date: "2026-02-20"
+date: "2026-02-16"
 description: "I built a system where seven personas debate every decision and a sprint factory turns the output into shipped code. Here's what I learned about agent coordination."
 tags:
   - "ai-agents"

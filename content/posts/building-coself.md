@@ -1,6 +1,6 @@
 ---
 title: "Building Coself: One Brain, Three Transports, Zero Hallucinations"
-date: "2026-02-20"
+date: "2026-02-08"
 description: "How I built an AI agent system with persistent memory, formal verification, and a single brain serving Discord, WhatsApp, and HTTP."
 tags:
   - "rust"

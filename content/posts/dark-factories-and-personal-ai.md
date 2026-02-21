@@ -1,6 +1,6 @@
 ---
 title: "Dark Factories and the Case for Building Your Own AI"
-date: "2026-02-20"
+date: "2026-02-12"
 description: "Everyone's talking about autonomous software factories. I built a personal one — an AI assistant that remembers everything, reasons before acting, and runs across every device I use."
 tags:
   - "ai-agents"

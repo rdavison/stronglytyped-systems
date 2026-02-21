@@ -210,10 +210,10 @@ fn render_markdown(content: &str, ss: &SyntaxSet, theme: &syntect::highlighting:
                 html_output.push_str("</code>");
             }
             Event::Start(Tag::Heading { level, .. }) => {
-                html_output.push_str(&format!("<h{}>", level));
+                html_output.push_str(&format!("<h{}>", level as u8));
             }
             Event::End(TagEnd::Heading(level)) => {
-                html_output.push_str(&format!("</h{}>", level));
+                html_output.push_str(&format!("</h{}>", level as u8));
             }
             Event::Start(Tag::Paragraph) => {
                 html_output.push_str("<p>");

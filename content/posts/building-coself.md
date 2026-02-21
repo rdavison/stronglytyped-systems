@@ -13,7 +13,7 @@ Most AI agent systems are chatbots with a database bolted on. Coself is not that
 
 Coself is a system where one brain — a single invocation pathway — serves three transports (Discord, WhatsApp, HTTP) while maintaining persistent memory across every interaction. Every invocation loads the same identity files, runs the same reasoning engines, and writes to the same audit log. There is no "Discord version" and "WhatsApp version." There is one mind.
 
-This post is an overview of how the system works. I'm not going to give away every implementation detail, but I want to show the architecture and the decisions that shaped it.
+This post is an overview of how the system works — the architecture and the decisions that shaped it.
 
 ## The Problem
 
@@ -43,16 +43,16 @@ The system has three layers:
 
 The brain doesn't know or care which gateway called it. It doesn't know if you're on Discord or WhatsApp. It just thinks.
 
-**The Event Runtime** dispatches invocations to scoped programs. Not every message needs the full reasoning stack. A simple acknowledgment doesn't need Lean 4 proofs. The runtime examines the incoming event, matches it against program triggers, and routes to the appropriate handler — with the option to fall back to the full brain for anything unrecognized.
+**The Event Runtime** dispatches invocations to scoped programs. Not every message needs the full reasoning stack. A simple acknowledgment doesn't need formal proofs. The runtime examines the incoming event, matches it against program triggers, and routes to the appropriate handler — with the option to fall back to the full brain for anything unrecognized.
 
-## Four Reasoning Engines
+## The Logic Engine
 
-This is where it gets interesting. Before every brain invocation, four engines run in parallel:
+Before every brain invocation, four reasoning engines run in parallel:
 
-- **Prolog** — Deductive reasoning. Facts and rules about identity, relationships, patterns. "What blocks goal X?" is a Prolog query.
-- **Lean 4** — Formal theorem prover. If Prolog *searches* for answers, Lean *proves* them. If it compiles, it's true. I use this to verify behavioral invariants about the agent's own architecture.
-- **Futhark** — GPU-parallel computation. Belief propagation through influence networks, Monte Carlo simulation of action outcomes, priority-weighted impact scoring.
-- **MiniZinc** — Constraint optimization. Given effort costs, dependencies, and a time budget, what's the optimal schedule?
+- **Deductive reasoning** — Facts and rules about identity, relationships, patterns. "What blocks goal X?" is a query against the knowledge base.
+- **Formal verification** — A theorem prover. The deductive engine *searches* for answers; this one *proves* them. If it compiles, it's true. I use this to verify behavioral invariants about the agent's own architecture.
+- **Parallel computation** — Belief propagation through influence networks, Monte Carlo simulation of action outcomes, priority-weighted impact scoring.
+- **Constraint optimization** — Given effort costs, dependencies, and a time budget, what's the optimal schedule?
 
 The engines don't talk to each other. They each receive the current state, produce their output, and the brain synthesizes everything.
 
@@ -96,4 +96,4 @@ The question now is whether this architecture scales — not in the "millions of
 
 ---
 
-*Built with Rust, Axum, Tokio, Lean 4, Futhark, MiniZinc, Prolog, egui, and SwiftUI. The system runs on a MacBook and talks to Claude.*
+*Built with Rust, Axum, and Tokio. The system runs on a MacBook and talks to Claude.*

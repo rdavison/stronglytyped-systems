@@ -32,51 +32,35 @@ One mind means every invocation has the full picture. It's more expensive per ca
 
 ## Memory: Retrieval vs. Full Load
 
-OpenClaw stores conversations, long-term memory, and skills as plain Markdown and YAML files in your workspace. When context is needed, the relevant pieces get retrieved and injected into the prompt. It's the standard RAG-adjacent pattern: store everything, retrieve what's relevant.
+OpenClaw stores conversations and memory as plain Markdown and YAML files. When context is needed, the relevant pieces get retrieved and injected into the prompt — the standard RAG-adjacent pattern.
 
-Coself doesn't retrieve. It loads everything. Every invocation reads three complete files — identity, conversation history, and belief state — in their entirety. The context window carries the full state every time.
+Coself doesn't retrieve. It loads everything, every time. The context window carries the full identity state on every invocation. This is deliberately wasteful — more tokens, more cost — but nothing is ever missing because it wasn't in the retrieval set. No relevance scoring to get wrong. No embeddings to miss a semantic connection.
 
-This is deliberately wasteful. It costs more tokens. It uses more of the context window. But it means the system never "forgets" something because it wasn't in the retrieval set. There's no relevance scoring to get wrong. There's no query that misses a critical piece of context because the embedding didn't capture the right semantic relationship.
-
-The tradeoff is obvious: this doesn't scale to years of conversation history. At some point, the context window fills up and you need a different strategy. But for now, for one person's life over weeks and months, the full-load approach means the AI has the same context I have. It knows what I know. Nothing falls through the cracks.
+The tradeoff: this doesn't scale to years of history. But for one person's life over weeks and months, it means the AI has the same context I have.
 
 ## Reasoning: LLM-Only vs. Multi-Engine
 
 This is where the architectures diverge most sharply.
 
-OpenClaw's workflow is: message arrives, intent gets parsed, relevant context retrieved, appropriate tools selected, actions executed, response delivered. The LLM handles the reasoning. The system around it handles the plumbing.
+OpenClaw's workflow is: message comes in, context is retrieved, tools are selected, the LLM reasons, actions execute. The LLM handles the thinking. The system handles the plumbing.
 
-Coself adds a layer that OpenClaw doesn't have: before the LLM ever sees the prompt, four reasoning engines run in parallel. Deductive logic queries a knowledge base of facts and relationships. A formal verifier checks structural invariants. A parallel computation engine runs numerical analysis — belief propagation, Monte Carlo simulations, impact scoring. A constraint solver finds optimal schedules given effort costs and dependencies.
+Coself adds a layer between the message and the LLM. Before the model ever sees the prompt, multiple reasoning engines run in parallel — each approaching the current state from a different formal discipline. The LLM synthesizes their output into a response. It's not reasoning from scratch; it's reasoning from a foundation of verified facts and computed analysis.
 
-The LLM synthesizes all of this into a response. But it's not reasoning from scratch. It's reasoning from a foundation of verified facts, proven invariants, and computed optima. The difference is subtle but compounding: over time, the system accumulates formal knowledge that the LLM can build on, not just conversation transcripts.
-
-Is this overkill for "remind me to buy groceries"? Absolutely. But for "what's the optimal order to tackle these five life priorities given their dependencies and my available time this week" — that's a constraint optimization problem, not a vibes problem. The formal machinery earns its keep on the hard questions.
+Is this overkill for "remind me to buy groceries"? Absolutely. But for "what's the optimal order to tackle these five priorities given their dependencies and my available time" — that's a constraint problem, not a vibes problem. The formal machinery earns its keep on the hard questions.
 
 ## Identity: Configurable vs. Persistent
 
-OpenClaw agents are configurable. You define a personality in a SOUL.md file, set up tool access, bind it to channels. You can create, modify, or delete agents as needed. The agent is a configuration artifact.
+OpenClaw agents are configurable. You define a personality, set up tool access, bind it to channels. You can create, modify, or delete agents freely. The agent is a configuration artifact.
 
-Coself's identity isn't configurable — it's persistent and evolving. The system maintains a Bayesian belief state where every belief has a confidence score with cited evidence. Beliefs update as evidence accumulates. They never get silently dropped. If something contradicts a prior belief, the confidence adjusts and the contradiction is recorded.
+Coself's identity isn't configurable — it's persistent and evolving. The system maintains a Bayesian belief state that updates as evidence accumulates. It has opinions — evidence-weighted assessments that shift over time. When new information arrives, it doesn't just store it; it integrates it into an existing model of the world.
 
-This means the system has opinions. Not hardcoded opinions — evidence-weighted probabilistic assessments that shift over time. It knows what it thinks, why it thinks it, and how confident it is. When new information arrives, it doesn't just store it — it integrates it into an existing model of the world.
+OpenClaw's approach is more flexible — reconfigure, reset, start fresh. Coself's is more opinionated — understanding accumulates, and that understanding shapes every future interaction.
 
-OpenClaw's approach is more flexible. You can reconfigure, reset, start fresh. Coself's approach is more opinionated. The system accumulates understanding over time, and that understanding shapes every future interaction.
+## Platform vs. Personal System
 
-## Skills vs. Programs
+The remaining differences follow the same axis. OpenClaw has a rich skills ecosystem — hundreds of community-built capabilities, with AI that can generate and install new skills autonomously. Coself's capabilities are compiled in Rust and verified at build time. OpenClaw's Gateway supports over a dozen channels with sophisticated routing rules. Coself supports three transports — but each one feeds into a deeper reasoning pipeline.
 
-OpenClaw has a rich skills ecosystem. Hundreds of community-built skills for email processing, data analysis, media control. The AI can even generate and install new skills autonomously. It's an extensible platform with a thriving community.
-
-Coself has typed event dispatch. Incoming events match against program triggers and route to scoped handlers — lightweight programs for common patterns, with a fallback to the full reasoning stack for anything unrecognized. Programs are defined in Rust, not YAML. They're compiled, typed, and verified at build time.
-
-This is the builder vs. platform tradeoff. OpenClaw is a platform designed for a community of users. Coself is a system designed for one user. OpenClaw needs the flexibility of runtime-configurable skills because it can't know what its users will need. Coself can compile its capabilities because I know exactly what I need — and if I need something new, I add it to the codebase and rebuild.
-
-## The Gateway: Broad vs. Deep
-
-OpenClaw's Gateway is genuinely impressive. WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, Teams, Matrix — over a dozen channels, with sophisticated routing rules, per-agent bindings, compound matching conditions. It's a complete orchestration layer.
-
-Coself supports three transports: Discord, WhatsApp, and HTTP. That's it. But each one feeds into a brain that runs four reasoning engines, loads a full identity model, and writes to an immutable audit log. The Gateway is simpler; the brain is deeper.
-
-This reflects different design priorities. OpenClaw optimizes for reach — meet users wherever they already are. Coself optimizes for depth — make every interaction count, regardless of which transport delivered it.
+OpenClaw optimizes for reach. Coself optimizes for depth. Both are valid — they're just solving different problems.
 
 ## What I Actually Learned
 

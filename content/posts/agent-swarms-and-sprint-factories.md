@@ -36,11 +36,7 @@ The adversary's parting observation stuck with me: *the gap between the elaborat
 
 That parliament debate produced something I didn't expect: a permanent stage in my development pipeline.
 
-Every idea that enters the system now passes through what I call a desugaring pass — borrowed from compiler terminology, where syntactic sugar gets reduced to its core form. Three roles evaluate the idea:
-
-1. **The Formalist** extracts the essence. What is actually being claimed here? What's the type signature of this idea?
-2. **The UX Designer** checks whether the simplified version still serves the user. Does it actually work, or did we simplify away the point?
-3. **The Adversary** attacks both directions — overcomplexity ("this is engineering theater") and dangerous oversimplification ("you removed the load-bearing wall").
+Every idea that enters the system now passes through what I call a desugaring pass — borrowed from compiler terminology, where syntactic sugar gets reduced to its core form. Multiple perspectives evaluate the idea, attacking it from both directions: overcomplexity ("this is engineering theater") and dangerous oversimplification ("you removed the load-bearing wall").
 
 The rule: the output must be shorter than the input. If your simplification takes more words than the original idea, the pass failed. You made it more complicated, not less.
 
@@ -50,9 +46,9 @@ This has saved me from myself more times than I'd like to admit. My failure mode
 
 The other half of the system is a formalized sprint methodology. Not "agile" in the corporate sense — more like a compiler that takes a domain and produces shipped artifacts through a defined sequence of phases.
 
-The loop: research, scope, design, implement, test, document, get feedback, run QA, write a report, decide whether to iterate. Maximum ten sprints per cycle. Each phase has exit gates — predicates that must hold before advancing to the next phase. If the gates don't pass, you don't advance. It's the same principle as a type checker: if it doesn't compile, it doesn't ship.
+Each phase has exit gates — predicates that must hold before advancing. If the gates don't pass, you don't advance. It's the same principle as a type checker: if it doesn't compile, it doesn't ship. Maximum ten sprints per cycle.
 
-The sprint factory treats every domain as a DSL. The designed specification becomes the contract. Any two systems that want to interoperate implement that spec. No ad-hoc coupling. This sounds rigid, and it is — deliberately. The rigidity is a feature. It prevents the thing that kills most personal projects: scope creep disguised as "making it better."
+This sounds rigid, and it is — deliberately. The rigidity prevents the thing that kills most personal projects: scope creep disguised as "making it better."
 
 I shipped an event runtime in four sprints this way. Kernel types and routing, brain refactor and gateway wiring, dispatch switch, then performance tuning. Each sprint had clear gates, clear deliverables, and a clear exit. The whole thing took less time than I would have spent debating the architecture in my head.
 

@@ -38,9 +38,9 @@ It's the same principle behind ensemble methods in machine learning. A random fo
 
 ## What This Looks Like in Practice
 
-A concrete example. I asked the system to research visa requirements for a trip. A single-pass response gave me confident, specific, and partially wrong information about processing times and document requirements. It cited plausible numbers that were outdated.
+A concrete example. I asked the system to evaluate whether a particular API design would handle concurrent writes correctly. A single-pass response gave me a confident, detailed analysis — and it was subtly wrong. It described a race condition that couldn't actually occur given the locking semantics, and missed a real one hiding in a different code path.
 
-When I ran the same question through multiple angles — one pass focused on official source verification, another on edge cases and exceptions, a third adversarially challenging the first response's claims — the contradictions surfaced immediately. The system caught its own errors, not because any single pass was smarter, but because cross-referencing multiple samples exposed where the confidence was fake.
+When I ran the same question through multiple angles — one pass focused on formal correctness, another on practical failure modes, a third adversarially challenging the first response's claims — the phantom race condition collapsed immediately (the adversary pointed out the lock made it impossible) and the real one surfaced (the engineer asked "what happens if this callback fires before the lock is acquired?").
 
 The corrected output wasn't just more accurate. It was more honest about its own uncertainty. Debate doesn't just filter errors — it calibrates confidence. Claims that survive cross-examination get stated with conviction. Claims that wobble get flagged as uncertain. The system learns to distinguish what it knows from what it's guessing.
 
@@ -50,7 +50,7 @@ The obvious pushback: this is expensive. Multiple passes means multiple API call
 
 True. But consider what you're comparing against. The cost of a confident hallucination that makes it into a decision isn't measured in tokens. It's measured in wasted effort, wrong directions, and lost trust. If you're using an LLM for anything that matters — anything where being wrong has consequences — the multi-pass cost is cheap insurance.
 
-And you don't need to run the full parliament on everything. Most questions are low-stakes. "Summarize this document" doesn't need adversarial cross-examination. But "what are the legal requirements for this visa application" absolutely does. The system should know when to invest in accuracy and when a single pass is fine. That judgment about when to debate is itself a valuable architectural decision.
+And you don't need to run the full parliament on everything. Most questions are low-stakes. "Summarize this document" doesn't need adversarial cross-examination. But "is this concurrent data structure correct" absolutely does. The system should know when to invest in accuracy and when a single pass is fine. That judgment about when to debate is itself a valuable architectural decision.
 
 ## Why This Isn't Just "Ask Again"
 

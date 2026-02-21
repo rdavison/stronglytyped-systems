@@ -24,26 +24,20 @@ That last part is the key architectural decision. There's one brain, not three c
 
 ## It Remembers Everything
 
-Not "retrieves relevant context." Actually remembers. Every meaningful interaction gets recorded. People, conversations, decisions, open questions — all of it, persisted across sessions and across days.
-
-The system maintains a probabilistic belief state. Every belief has a confidence score with cited evidence. When new information comes in, confidence goes up or down. Nothing is silently dropped. If I tell it something that contradicts a prior belief, it updates the belief and notes what changed.
-
-This matters because the failure mode of most AI assistants is amnesia. You have the same conversation three times because the system forgot the first two. Mine doesn't forget. It has an identity engine that loads my full context on every single invocation.
+Not "retrieves relevant context." Actually remembers. The full identity state — conversations, decisions, beliefs, open questions — loads on every single invocation. The failure mode of most AI assistants is amnesia. You have the same conversation three times because the system forgot the first two. Mine doesn't forget.
 
 ## It Reasons Before Acting
 
-Before every response, a logic engine runs. Not just "generate plausible text" — actual formal reasoning. Deductive logic for querying facts and relationships. Formal proofs for verifying that behavioral invariants hold. Parallel computation for numerical analysis. Constraint solving for scheduling and optimization.
-
-The engines run in parallel. Each one gets the current state, produces its output, and the brain synthesizes everything into a response. The system doesn't just *sound* right — it has actually checked its work.
+Before every response, multiple reasoning engines run in parallel. The system doesn't just *sound* right — it has actually checked its work against formal logic, numerical analysis, and constraint optimization before the language model ever generates a response.
 
 ## It Does Real Work
 
 This isn't a toy. Here's what it handles for me on a regular basis:
 
-- **Trip planning.** It researched visa requirements, compared flight itineraries, and is actively helping coordinate a multi-country Europe trip including hotel bookings and consulate appointments.
+- **Trip planning.** It researches logistics, compares itineraries, and coordinates multi-step travel planning including bookings and appointments.
 - **Email triage.** It connects to my Gmail, archives junk, and surfaces the messages that actually need my attention.
 - **Sprint management.** It runs a formalized development workflow — research, scope, implement, test, document — with structured QA feedback loops.
-- **Writing.** You're reading a draft it helped produce right now. I have a writing aversion that's been with me since high school. Having an AI that knows my voice and can draft things for me is a genuine quality-of-life improvement.
+- **Writing.** You're reading a draft it helped produce right now. Having an AI that knows my voice and can get words on the page when I'm stuck is a genuine quality-of-life improvement.
 - **Scheduling and coordination.** It tracks what I need to do, when, and what depends on what.
 
 ## Why I Built It From Scratch
@@ -52,7 +46,7 @@ There are plenty of AI assistant products out there. I could have used one. But 
 
 A generic assistant starts every conversation from zero. It doesn't know my preferences, my relationships, my ongoing projects, my belief system. It can't reason about my life because it has no model of my life.
 
-Building from scratch meant I could design the memory model, the reasoning pipeline, and the identity system exactly the way I needed them. The system is built in Rust. It's fast, it's typed, and it doesn't crash. The brain is an async runtime that dispatches events to scoped programs — lightweight handlers for common patterns, with a fallback to the full reasoning stack for anything complex.
+Building from scratch meant I could design the memory model, the reasoning pipeline, and the identity system exactly the way I needed them. The system is built in Rust. It's fast, it's typed, and it doesn't crash.
 
 ## The Dark Factory Connection
 

@@ -31,19 +31,11 @@ None of the existing agent frameworks solved all three. LangChain gives you chai
 
 The system has three layers:
 
-**Gateways** handle transport. Each gateway (Discord, WhatsApp, HTTP) manages its own connection lifecycle — WebSocket heartbeats, webhook verification, Axum routes — and converts incoming messages into a common format. Then it calls `brain::invoke()`.
+**Gateways** handle transport. Each gateway manages its own connection lifecycle and converts incoming messages into a common format before passing them to the brain.
 
-**The Brain** is the core. Every invocation:
+**The Brain** is the core. Every invocation loads the full identity state, runs the reasoning engines in parallel, constructs a system prompt with all of this context, and produces a response. The brain doesn't know or care which gateway called it. It just thinks.
 
-- Loads three identity files (SOUL.md, CONTEXT.md, BELIEFS.md)
-- Runs four reasoning engines in parallel
-- Constructs a system prompt with all of this context
-- Invokes Claude with stream-json output
-- Parses the response, writes an audit log, returns the result
-
-The brain doesn't know or care which gateway called it. It doesn't know if you're on Discord or WhatsApp. It just thinks.
-
-**The Event Runtime** dispatches invocations to scoped programs. Not every message needs the full reasoning stack. A simple acknowledgment doesn't need formal proofs. The runtime examines the incoming event, matches it against program triggers, and routes to the appropriate handler — with the option to fall back to the full brain for anything unrecognized.
+**The Event Runtime** dispatches invocations to scoped programs. Not every message needs the full reasoning stack. A simple acknowledgment doesn't need formal proofs. The runtime examines the incoming event and routes to the appropriate handler — with the option to fall back to the full brain for anything unrecognized.
 
 ## The Logic Engine
 
@@ -58,33 +50,23 @@ The engines don't talk to each other. They each receive the current state, produ
 
 ## Memory Model
 
-Three files, always loaded:
+The identity state lives in a set of persistent files, always loaded in full:
 
-- **SOUL.md** — Immutable identity. Values, cognitive signature, core principles. Rarely changes.
-- **CONTEXT.md** — Session log. Every meaningful interaction gets recorded here. People, conversations, decisions, open questions.
-- **BELIEFS.md** — Bayesian belief state. Every belief has a confidence score (0.0–1.0) with cited evidence. Beliefs update as evidence accumulates. Contradictory evidence decreases confidence. Nothing is silently dropped.
+- **Immutable identity** — values, cognitive signature, core principles. Rarely changes.
+- **Session log** — every meaningful interaction gets recorded. People, conversations, decisions, open questions.
+- **Bayesian belief state** — every belief has a confidence score with cited evidence. Beliefs update as evidence accumulates. Contradictory evidence decreases confidence. Nothing is silently dropped.
 
 This isn't RAG. It's not "retrieve the top 5 relevant chunks." The brain reads *all* of these files, *every time*. The context window carries the full state. This is deliberate: the system should have the same context regardless of what the current message is about.
 
-## The Desugaring Pass
+## Process Discipline
 
-Every idea that enters the development pipeline passes through a 3-way tournament:
+My primary failure mode as a builder is over-engineering. So the system includes a desugaring pass — a simplification stage that every idea must survive before it enters the development pipeline. If the simplified version is longer than the original, the pass failed.
 
-1. **The Formalist** defines simplification rules and a type system for the idea
-2. **The UX Designer** ensures the simplified version actually serves the user
-3. **The Adversary** attacks both complexity theater and oversimplification
-
-The output must be shorter than the input. If simplification takes more words than the original idea, the pass failed. This prevents the system (and me) from over-engineering — which, as a builder, is my primary failure mode.
-
-## Sprint Methodology
-
-Development follows a formalized loop: research → desugaring pass → scope → DSL design → implementation → docs → UX feedback → QA → report → recurse. Maximum 10 sprints per cycle. The cycle terminates when QA passes or the budget is exhausted.
-
-The DSL designed during the sprint becomes the contract. Any two systems that want to interoperate must implement and communicate via that spec. No ad-hoc coupling.
+Development follows a formalized sprint loop with exit gates at each phase. Maximum 10 sprints per cycle. The cycle terminates when QA passes or the budget is exhausted.
 
 ## What I Didn't Build
 
-I didn't build a multi-agent system. There is one mind, many modes. The personas (Formalist, Engineer, Child, Adversary) are lenses, not separate agents with separate contexts. They share the same memory, the same beliefs, the same identity. This was a deliberate architectural decision: splitting into separate agents creates coordination overhead and identity fragmentation.
+I didn't build a multi-agent system. There is one mind, many modes. The personas are lenses, not separate agents with separate contexts. They share the same memory, the same beliefs, the same identity. This was a deliberate architectural decision: splitting into separate agents creates coordination overhead and identity fragmentation.
 
 I also didn't build a RAG pipeline. The context window carries everything. This trades cost for coherence. It's more expensive per invocation, but the system never "forgets" something because it wasn't in the retrieval set.
 
